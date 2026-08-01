@@ -126,6 +126,8 @@ html.dark .filter-btn.filter-btn-range{background:rgba(24,95,165,.22);border-col
 
 /* ── KPI ── */
 .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.kpi-grid-3{grid-template-columns:repeat(3,1fr);}
+.kpi-grid-4{grid-template-columns:repeat(4,1fr);}
 /* Propriedades compartilhadas por todos os cards — alterar aqui afeta todos */
 .kpi-card,.card,.bud-card,.admin-section,.bud-cat-card{background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);}
 .kpi-card{padding:18px 20px;transition:transform .15s,box-shadow .15s;}
@@ -710,7 +712,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 }
 @media(max-width:900px){
   .main{padding:14px;}
-  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .kpi-grid,.kpi-grid-3,.kpi-grid-4{grid-template-columns:repeat(2,1fr);}
   .grid-2{grid-template-columns:1fr;}
   .grid-donut{grid-template-columns:1fr;}
   .header{padding:12px 16px;}
@@ -793,7 +795,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
   .invest-main{padding:12px;}
 
   /* KPIs: 2 colunas no mobile */
-  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .kpi-grid,.kpi-grid-3,.kpi-grid-4{grid-template-columns:repeat(2,1fr);gap:10px;}
   .kpi-value{font-size:18px;}
   .kpi-card{padding:14px 14px;}
 
@@ -923,8 +925,6 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
   .upload-hint-note{margin-top:10px;font-size:11px;color:var(--mgray);}
   .card-top-gap{margin-top:18px;}
   .legend-mb{margin-bottom:12px;}
-  .kpi-grid-3{grid-template-columns:repeat(3,1fr);}
-  .kpi-grid-4{grid-template-columns:repeat(4,1fr);}
   .card-title-row{display:flex;align-items:center;justify-content:space-between;}
   .inc-legend-wrap{display:flex;flex-wrap:wrap;flex-direction:column;gap:0;margin-top:14px;}
 
