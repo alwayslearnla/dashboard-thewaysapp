@@ -1,6 +1,6 @@
 {
-  "name": "Dashboard Financeiro",
-  "short_name": "Dashboard",
+  "name": "The Ways — Dashboard Financeiro",
+  "short_name": "The Ways",
   "description": "Dashboard financeiro pessoal",
   "start_url": "./index.html",
   "scope": "./",

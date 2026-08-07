@@ -1450,6 +1450,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
         <button class="reg-btn reg-btn-export" id="btnExportRegCSV" onclick="exportarRegistrosCSV()">⬇ Exportar CSV</button>
         <button class="reg-btn" id="btnExportRegXLSX" style="background:var(--navy);color:#fff" onclick="exportarRegistrosXLSX()">⬇ Exportar XLSX</button>
         <button class="reg-btn" id="btnGerarDat" style="background:#7c3aed;color:#fff;display:none" onclick="exportarDAT()">⬇ Gerar .dat (cliente)</button>
+        <button class="reg-btn" id="btnExportCorrecoes" style="background:#059669;color:#fff;display:none" onclick="exportarCorrecoes()">📤 Enviar Correções (.dat)</button>
       </div>
     </div>
   </div>
@@ -1477,6 +1478,9 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 <div class="edit-overlay" id="editOverlay">
   <div class="edit-modal">
     <h3>✏️ Editar Registro</h3>
+    <div id="editModalHint" style="display:none;background:#F3F4F6;border-radius:8px;padding:8px 10px;font-size:11px;color:var(--mgray);margin-bottom:10px;line-height:1.4">
+      ℹ️ Neste modo você pode ajustar apenas <strong>Receita/Despesa</strong> e <strong>Tipo/Categoria</strong>. Data, descrição e valor ficam bloqueados — seu planejador financeiro é quem controla esses campos.
+    </div>
     <div class="edit-field">
       <label>Data</label>
       <input type="date" id="editData">
@@ -1529,6 +1533,8 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
     <div class="admin-main" id="adminTree"></div>
     <div class="admin-export-bar">
       <button class="reg-btn reg-btn-export" onclick="exportTree()">⬇️ Exportar Árvore (JSON)</button>
+      <button class="reg-btn" style="background:#059669;color:#fff" onclick="document.getElementById('correcoesFileInput').click()">📥 Importar Correções do Cliente</button>
+      <input type="file" id="correcoesFileInput" accept=".dat" style="display:none" onchange="importarCorrecoes(this.files[0]); this.value='';">
       <button class="reg-btn" style="background:var(--navy);color:#fff" onclick="adminLogout()">🔒 Sair</button>
       <span style="font-size:12px;color:var(--mgray);margin-left:8px">Alterações aplicam-se imediatamente ao dashboard.</span>
     </div>
@@ -1748,6 +1754,9 @@ const STATE = {
 
   // Arquivo .dat pendente de senha
   _datPendente: null,
+  _correcoesPendente: null,   // corpo cifrado de um .dat de correções (modo planejador)
+  _senhaPendenteTipo: null,   // 'dat' | 'correcoes' — qual fluxo a tela de senha deve processar
+  _senhaAtual: null,          // senha usada para abrir o .dat original (modo cliente, só em memória)
 
   // Binário do arquivo Excel original (mantido para exportarRegistrosXLSX)
   _lastFileData: null,
@@ -1920,6 +1929,40 @@ function escAttr(str) {
 // Cria elemento span seguro para texto (sem innerHTML)
 function safeText(str) { return document.createTextNode(String(str||'')); }
 
+// ── Compartilhar/baixar arquivo ──────────────────────────────────────────────
+// No iOS, quando o app está instalado como PWA (modo standalone), o download
+// tradicional via <a download> costuma falhar silenciosamente. Preferimos a
+// Web Share API quando disponível: abre a folha de compartilhar nativa, o que
+// além de contornar o problema, já deixa o usuário mandar o arquivo direto
+// (WhatsApp, e-mail, AirDrop) sem precisar navegar pelo app Arquivos.
+// Cai para o download tradicional quando o compartilhamento de arquivos não
+// está disponível (desktop, navegadores sem suporte).
+async function _compartilharOuBaixarArquivo(blob, filename, opts = {}) {
+  try {
+    const file = new File([blob], filename, { type: blob.type || 'application/octet-stream' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: opts.title || 'The Ways — Dashboard Financeiro',
+        text:  opts.text  || '',
+      });
+      return 'compartilhado';
+    }
+  } catch (err) {
+    if (err && err.name === 'AbortError') return 'cancelado'; // usuário fechou a folha de compartilhar
+    // qualquer outro erro cai para o download abaixo
+  }
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(a.href);
+  return 'baixado';
+}
+
 // Retorna label de período legível a partir de um array de índices visíveis
 // Ex: [0] → "jan/2025" | [0,1,2] → "jan/2025 – mar/2025" | [] → "período"
 function getPeriodLabel(visIdxs) {
@@ -2033,7 +2076,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('senhaClienteErro').textContent = 'A senha deve ter 6 caracteres.';
       return;
     }
-    _tentarAbrirDAT(v);
+    _tentarSenhaScreen(v);
   });
   document.getElementById('senhaClienteInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('senhaClienteBtn').click();
@@ -3258,6 +3301,8 @@ function _ativarModo(modo) {
 
   const hint = document.getElementById('uploadHint');
   if (hint) hint.style.display = isPlan ? '' : 'none';
+
+  _atualizaBtnCorrecoes();
 }
 
 const dz = document.getElementById('dropZone');
@@ -3403,8 +3448,7 @@ function exportModalCSV() {
   ].join(';'));
   const csv  = [header.join(';'), ...lines].join('\n');
   const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
-  const a    = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = 'registros.csv'; a.click(); URL.revokeObjectURL(a.href);
+  _compartilharOuBaixarArquivo(blob, 'registros.csv', { title: 'Registros — The Ways' });
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -5036,8 +5080,7 @@ function exportarRegistrosCSV() {
   ].join(';'));
   const csv  = ['Data;Descrição;Tipo;Categoria;Subcategoria;Origem;Valor', ...lines].join('\n');
   const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
-  const a    = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download='registros.csv'; a.click(); URL.revokeObjectURL(a.href);
+  _compartilharOuBaixarArquivo(blob, 'registros.csv', { title: 'Registros — The Ways' });
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -5131,8 +5174,17 @@ function openEditModal(txIdx) {
   const catFound = findCatForTipo(t.tipo, t.subcat) || t.cat || '';
   document.getElementById('editCat').value = catFound;
 
+  // No modo cliente, só Receita/Despesa e Tipo/Categoria podem ser alterados —
+  // data, descrição e valor ficam bloqueados (são de responsabilidade do planejador).
+  const isCliente = STATE.MODO === 'cliente';
+  ['editData', 'editDesc', 'editValor'].forEach(id => {
+    document.getElementById(id).disabled = isCliente;
+  });
+  const hint = document.getElementById('editModalHint');
+  if (hint) hint.style.display = isCliente ? '' : 'none';
+
   overlay.classList.add('open');
-  document.getElementById('editDesc').focus();
+  document.getElementById(isCliente ? 'editTipoMov' : 'editDesc').focus();
 }
 
 function closeEditModal() {
@@ -5184,22 +5236,36 @@ function findCatForTipo(tipoMov, subcat) {
 function saveEditRecord() {
   if (STATE._editIdx < 0 || !STATE.DATA) return;
   const t = STATE.DATA.transactions[STATE._editIdx];
-  const dateVal = document.getElementById('editData').value;
-  const desc    = document.getElementById('editDesc').value.trim();
+  const isCliente = STATE.MODO === 'cliente';
+
   const tipoMov = document.getElementById('editTipoMov').value;
   const cat     = document.getElementById('editCat').value;
   const subcat  = document.getElementById('editSubcat').value;
-  const valor   = parseFloat(document.getElementById('editValor').value);
 
-  if (!dateVal || !desc || !subcat || isNaN(valor)) {
-    showToast('Preencha todos os campos obrigatórios (incluindo o Tipo).', 'erro');
+  if (!subcat) {
+    showToast('Selecione o Tipo antes de salvar.', 'erro');
     return;
   }
 
-  const parts = dateVal.split('-');
-  const newDate = new Date(+parts[0], +parts[1]-1, +parts[2]);
-  const newMonthKey = `${String(newDate.getMonth()+1).padStart(2,'0')}/${newDate.getFullYear()}`;
-  const newMonth = newDate.toLocaleDateString('pt-BR',{month:'short',year:'numeric'}).replace('. ','/');
+  // No modo cliente, data/descrição/valor são somente leitura — mantém os valores
+  // originais independentemente do que estiver nos campos (bloqueados no HTML).
+  let newDate = t.date, newMonth = t.month, newMonthKey = t.monthKey, desc = t.desc, valor = t.valor;
+
+  if (!isCliente) {
+    const dateVal = document.getElementById('editData').value;
+    desc  = document.getElementById('editDesc').value.trim();
+    valor = parseFloat(document.getElementById('editValor').value);
+
+    if (!dateVal || !desc || isNaN(valor)) {
+      showToast('Preencha todos os campos obrigatórios (incluindo o Tipo).', 'erro');
+      return;
+    }
+
+    const parts = dateVal.split('-');
+    newDate = new Date(+parts[0], +parts[1]-1, +parts[2]);
+    newMonthKey = `${String(newDate.getMonth()+1).padStart(2,'0')}/${newDate.getFullYear()}`;
+    newMonth = newDate.toLocaleDateString('pt-BR',{month:'short',year:'numeric'}).replace('. ','/');
+  }
 
   t.date     = newDate;
   t.month    = newMonth;
@@ -5215,6 +5281,7 @@ function saveEditRecord() {
 
   // Reconstrói os dados internos
   rebuildDataFromTransactions();
+  _atualizaBtnCorrecoes();
 
   // Captura contexto antes de fechar
   const reopenFn  = STATE._drillReopenFn;
@@ -5537,17 +5604,14 @@ function renameTipo(origem, cat, tipo, catId) {
 function exportTree() {
   const json = JSON.stringify(TREE, null, 2);
   const blob = new Blob([json], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'arvore_categorias.json';
-  a.click();
-  URL.revokeObjectURL(a.href);
+  _compartilharOuBaixarArquivo(blob, 'arvore_categorias.json', { title: 'Árvore de categorias — The Ways' });
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
 // EXPORTAR / IMPORTAR .DAT — formato proprietário para versão cliente
 // ══════════════════════════════════════════════════════════════════════════════
-const DAT_MAGIC  = 'TWD1'; // The Ways Dashboard v1
+const DAT_MAGIC      = 'TWD1'; // The Ways Dashboard v1 — arquivo completo (planejador → cliente)
+const DAT_MAGIC_CORR = 'TWDC'; // The Ways Dashboard Correções — só os registros editados (cliente → planejador)
 const DAT_KEY    = [0x54,0x57,0x44,0x61,0x73,0x68,0x62,0x6f,0x61,0x72,0x64,0x32,0x30,0x32,0x35,0x21];
 
 function _xorBytes(bytes, key) {
@@ -5596,6 +5660,7 @@ function exportarDAT() {
   const corpo = {
     fileName: STATE.DATA.fileName || 'dados',
     transactions: STATE.DATA.transactions.map(t => ({
+      rid: t._excelRow ?? null, // âncora da linha original — usada para casar correções depois
       d: toLocalDateStr(t.date) || null,
       tp: t.tipo, ds: t.desc, c: t.cat, s: t.subcat, r: t.recurso,
       v: t.valor, vr: t.valorRaw,
@@ -5614,20 +5679,97 @@ function exportarDAT() {
   const output = DAT_MAGIC + cabecalho + '|' + corpoB64;
 
   const blob = new Blob([output], { type: 'application/octet-stream' });
-  const a    = document.createElement('a');
   const name = (STATE.DATA.fileName || 'dashboard').replace(/\.[^.]+$/, '');
-  a.href     = URL.createObjectURL(blob);
-  a.download = name + '_' + now.toISOString().slice(0, 7) + '.dat';
-  a.click();
-  URL.revokeObjectURL(a.href);
+  const filename = name + '_' + now.toISOString().slice(0, 7) + '.dat';
 
-  _abrirModalSenha(senha);
+  _compartilharOuBaixarArquivo(blob, filename, { title: 'Dashboard do cliente — The Ways' })
+    .finally(() => _abrirModalSenha(senha));
+}
+
+// ── Correções (modo cliente → planejador) ────────────────────────────────────
+// Exporta só os registros que o cliente reclassificou (Tipo/Categoria/Subcategoria),
+// reaproveitando a mesma senha usada para abrir o .dat original.
+function exportarCorrecoes() {
+  if (!STATE.DATA) { showToast('Nenhum dado carregado.', 'erro'); return; }
+
+  const editados = STATE.DATA.transactions.filter(t => t._edited && t._excelRow != null);
+  if (!editados.length) { showToast('Nenhuma correção para enviar.', 'info'); return; }
+
+  if (!STATE._senhaAtual) {
+    showToast('Não foi possível localizar a senha da sessão. Reabra o arquivo .dat recebido do planejador e tente novamente.', 'erro');
+    return;
+  }
+
+  const key = _deriveKey(STATE._senhaAtual);
+
+  const now     = new Date();
+  const expires = new Date(now); expires.setDate(expires.getDate() + 90);
+  const cabecalho = JSON.stringify({ v: 1, exportedAt: now.toISOString(), expiresAt: expires.toISOString() });
+
+  const corpo = {
+    fileName: STATE.DATA.fileName || 'dados',
+    correcoes: editados.map(t => ({
+      rid: t._excelRow,
+      tp: t.tipo, c: t.cat, s: t.subcat,
+      ea: t._editedAt instanceof Date ? t._editedAt.toISOString() : null,
+    })),
+  };
+
+  const corpoBytes = Array.from(new TextEncoder().encode(JSON.stringify(corpo)));
+  const corpoXored = _xorBytes(corpoBytes, key);
+  let b64str = '';
+  for (let i = 0; i < corpoXored.length; i++) b64str += String.fromCharCode(corpoXored[i]);
+  const corpoB64 = btoa(b64str);
+
+  const output = DAT_MAGIC_CORR + cabecalho + '|' + corpoB64;
+
+  const blob = new Blob([output], { type: 'application/octet-stream' });
+  const name = (STATE.DATA.fileName || 'dashboard').replace(/\.[^.]+$/, '');
+  const filename = name + '_correcoes_' + now.toISOString().slice(0, 10) + '.dat';
+
+  _compartilharOuBaixarArquivo(blob, filename, {
+    title: 'Correções — The Ways',
+    text: 'Segue o arquivo de correções do dashboard para atualizar sua base.',
+  }).then(resultado => {
+    if (resultado === 'cancelado') return;
+    showToast(`✅ Arquivo de correções gerado com ${editados.length} registro(s). Envie para seu planejador financeiro.`, 'ok');
+  });
+}
+
+// Mostra o botão "Enviar Correções" só no modo cliente e só quando existir algo editado
+function _atualizaBtnCorrecoes() {
+  const btn = document.getElementById('btnExportCorrecoes');
+  if (!btn) return;
+  const hasEdits = STATE.MODO === 'cliente' && STATE.DATA && STATE.DATA.transactions.some(t => t._edited);
+  btn.style.display = hasEdits ? '' : 'none';
 }
 
 // ── Tela de senha do cliente ─────────────────────────────────────────────────
 
 function _abrirSenhaCliente(corpoB64) {
-  STATE._datPendente = corpoB64;
+  _abrirSenhaSlot(corpoB64, 'dat');
+}
+
+// Versão genérica — usada tanto para abrir o .dat completo (modo cliente)
+// quanto para importar um .dat de correções (modo planejador).
+function _abrirSenhaSlot(corpoB64, tipo) {
+  STATE._senhaPendenteTipo = tipo; // 'dat' | 'correcoes'
+  if (tipo === 'correcoes') {
+    STATE._correcoesPendente = corpoB64;
+  } else {
+    STATE._datPendente = corpoB64;
+  }
+
+  const tituloEl = document.querySelector('#senhaClienteScreen .senha-cliente-titulo');
+  const subEl    = document.querySelector('#senhaClienteScreen .senha-cliente-sub');
+  if (tipo === 'correcoes') {
+    if (tituloEl) tituloEl.textContent = '🔒 Importar correções do cliente';
+    if (subEl)    subEl.textContent    = 'Digite a mesma senha de 6 caracteres enviada originalmente ao cliente.';
+  } else {
+    if (tituloEl) tituloEl.textContent = '🔒 Acesso protegido';
+    if (subEl)    subEl.textContent    = 'Digite a senha de 6 caracteres enviada pelo seu planejador financeiro.';
+  }
+
   document.getElementById('senhaClienteInput').value = '';
   document.getElementById('senhaClienteErro').textContent = '';
   document.getElementById('senhaClienteInput').classList.remove('erro');
@@ -5637,6 +5779,17 @@ function _abrirSenhaCliente(corpoB64) {
 function _fecharSenhaCliente() {
   document.getElementById('senhaClienteScreen').classList.remove('open');
   STATE._datPendente = null;
+  STATE._correcoesPendente = null;
+  STATE._senhaPendenteTipo = null;
+}
+
+// Dispara o fluxo certo (dat completo ou correções) conforme o que está pendente
+function _tentarSenhaScreen(senha) {
+  if (STATE._senhaPendenteTipo === 'correcoes') {
+    _tentarAbrirCorrecoes(senha);
+  } else {
+    _tentarAbrirDAT(senha);
+  }
 }
 
 function _tentarAbrirDAT(senha) {
@@ -5650,6 +5803,7 @@ function _tentarAbrirDAT(senha) {
 
     if (!corpo.transactions) throw new Error('formato inválido');
 
+    STATE._senhaAtual = senha; // guardada só em memória, para reenviar correções sem pedir senha de novo
     _fecharSenhaCliente();
     _processarCorpoDAT(corpo);
   } catch {
@@ -5664,6 +5818,103 @@ function _tentarAbrirDAT(senha) {
   }
 }
 
+// ── Correções (planejador): decifra e aplica na base atual ───────────────────
+function _tentarAbrirCorrecoes(senha) {
+  if (!STATE._correcoesPendente) return;
+  const key = _deriveKey(senha);
+  try {
+    const xored = Array.from(atob(STATE._correcoesPendente)).map(c => c.charCodeAt(0));
+    const bytes = _xorBytes(xored, key);
+    const json  = new TextDecoder().decode(new Uint8Array(bytes));
+    const corpo = JSON.parse(json);   // lança erro se senha errada → JSON inválido
+
+    if (!Array.isArray(corpo.correcoes)) throw new Error('formato inválido');
+
+    _fecharSenhaCliente();
+    _processarCorrecoes(corpo);
+  } catch {
+    const inp = document.getElementById('senhaClienteInput');
+    const err = document.getElementById('senhaClienteErro');
+    inp.classList.add('erro');
+    err.textContent = 'Senha incorreta. Verifique e tente novamente.';
+    inp.addEventListener('input', () => {
+      inp.classList.remove('erro');
+      err.textContent = '';
+    }, { once: true });
+  }
+}
+
+// Aplica as correções recebidas do cliente na base carregada, casando pelo
+// _excelRow (âncora da linha original na planilha).
+function _processarCorrecoes(corpo) {
+  if (!STATE.DATA) { showToast('Carregue sua planilha antes de importar correções.', 'erro'); return; }
+
+  let aplicadas = 0, naoEncontradas = 0;
+  corpo.correcoes.forEach(c => {
+    const t = STATE.DATA.transactions.find(tx => tx._excelRow === c.rid);
+    if (!t) { naoEncontradas++; return; }
+    t.tipo     = c.tp;
+    t.cat      = c.c;
+    t.subcat   = c.s;
+    t.valorRaw = t.tipo === 'Gasto' ? Math.abs(t.valor) : -Math.abs(t.valor);
+    t._edited   = true;
+    t._editedAt = c.ea ? new Date(c.ea) : new Date();
+    aplicadas++;
+  });
+
+  rebuildDataFromTransactions();
+
+  if (STATE.currentView === 'registros')     initRegistros();
+  else if (STATE.currentView === 'dashboard') renderAll();
+  else if (STATE.currentView === 'budget')    renderBudgetScreen();
+  else if (STATE.currentView === 'invest')    renderInvestScreen();
+
+  if (naoEncontradas > 0) {
+    showToast(`✅ ${aplicadas} correção(ões) aplicada(s). ⚠️ ${naoEncontradas} não encontrada(s) na base atual (planilha pode ter mudado).`, aplicadas ? 'ok' : 'erro');
+  } else {
+    showToast(`✅ ${aplicadas} correção(ões) aplicada(s) com sucesso.`, 'ok');
+  }
+}
+
+// Lê o arquivo .dat de correções enviado pelo cliente, valida cabeçalho e pede a senha
+function importarCorrecoes(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const raw = e.target.result;
+      if (!raw.startsWith(DAT_MAGIC_CORR)) {
+        showToast('Arquivo inválido: não é um arquivo de correções (.dat) reconhecido.', 'erro');
+        return;
+      }
+
+      const semMagic = raw.slice(DAT_MAGIC_CORR.length);
+      const sepIdx   = semMagic.indexOf('|');
+      if (sepIdx === -1) {
+        showToast('Formato de arquivo não reconhecido.', 'erro');
+        return;
+      }
+
+      const cabecalho = JSON.parse(semMagic.slice(0, sepIdx));
+      if (cabecalho.v !== 1) {
+        showToast(`Versão do arquivo não suportada (v${cabecalho.v}).`, 'erro');
+        return;
+      }
+      if (cabecalho.expiresAt && new Date() > new Date(cabecalho.expiresAt)) {
+        const exp = new Date(cabecalho.expiresAt).toLocaleDateString('pt-BR');
+        showToast(`Arquivo de correções expirado em ${exp}. Solicite um novo envio ao cliente.`, 'erro');
+        return;
+      }
+
+      const corpoB64 = semMagic.slice(sepIdx + 1);
+      _abrirSenhaSlot(corpoB64, 'correcoes');
+    } catch (err) {
+      showToast('Erro ao ler arquivo: ' + err.message, 'erro');
+    }
+  };
+  reader.readAsText(file);
+}
+
 function _processarCorpoDAT(corpo) {
   if (corpo.tree) TREE = corpo.tree;
 
@@ -5672,7 +5923,7 @@ function _processarCorpoDAT(corpo) {
     const editedAt = t.ea ? new Date(t.ea) : null;
     const monthKey = `${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`;
     const month    = date.toLocaleDateString('pt-BR',{month:'short',year:'numeric'}).replace('. ','/');
-    return { idx: i, id: i, date, month, monthKey, tipo:t.tp, desc:t.ds, cat:t.c, subcat:t.s,
+    return { idx: i, id: i, _excelRow: t.rid ?? null, date, month, monthKey, tipo:t.tp, desc:t.ds, cat:t.c, subcat:t.s,
              recurso:t.r||'', valor:t.v, valorRaw:t.vr,
              _edited: !!editedAt, _editedAt: editedAt };
   });
