@@ -5693,7 +5693,15 @@ function exportarCorrecoes() {
   if (!STATE.DATA) { showToast('Nenhum dado carregado.', 'erro'); return; }
 
   const editados = STATE.DATA.transactions.filter(t => t._edited && t._excelRow != null);
-  if (!editados.length) { showToast('Nenhuma correção para enviar.', 'info'); return; }
+  if (!editados.length) {
+    const editadosSemAncora = STATE.DATA.transactions.some(t => t._edited && t._excelRow == null);
+    if (editadosSemAncora) {
+      showToast('Este arquivo .dat foi gerado por uma versão anterior e não suporta o envio de correções. Peça ao seu consultor um novo arquivo .dat atualizado.', 'erro');
+    } else {
+      showToast('Nenhuma correção para enviar.', 'info');
+    }
+    return;
+  }
 
   if (!STATE._senhaAtual) {
     showToast('Não foi possível localizar a senha da sessão. Reabra o arquivo .dat recebido do planejador e tente novamente.', 'erro');
@@ -5740,7 +5748,8 @@ function exportarCorrecoes() {
 function _atualizaBtnCorrecoes() {
   const btn = document.getElementById('btnExportCorrecoes');
   if (!btn) return;
-  const hasEdits = STATE.MODO === 'cliente' && STATE.DATA && STATE.DATA.transactions.some(t => t._edited);
+  const hasEdits = STATE.MODO === 'cliente' && STATE.DATA &&
+    STATE.DATA.transactions.some(t => t._edited && t._excelRow != null);
   btn.style.display = hasEdits ? '' : 'none';
 }
 
