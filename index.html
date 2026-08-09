@@ -85,6 +85,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text
 .file-badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:5px 14px;font-size:12px;color:rgba(255,255,255,.8);cursor:pointer;transition:background .15s;}
 .file-badge:hover{background:rgba(255,255,255,.2);}
 .period-badge{font-size:12px;color:rgba(255,255,255,.5);}
+.version-badge{font-size:10px;color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:2px 8px;white-space:nowrap;cursor:default;}
 
 /* ── Upload screen ── */
 #uploadScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;overflow-y:auto;padding:40px;}
@@ -583,7 +584,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 
   /* Esconde elementos de interface */
   .header-right, #dashFilters, #budgetFilters,
-  .print-btn, .nav-tabs, .period-badge, .file-badge,
+  .print-btn, .nav-tabs, .period-badge, .file-badge, .version-badge,
   .btn-export, .modal-overlay, #uploadScreen,
   .card-collapse-btn, .modal-overlay { display:none !important; }
 
@@ -763,6 +764,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
     flex-shrink:0;
   }
   .period-badge{display:none;}
+  .version-badge{display:none;}
   .print-btn{display:none !important;}
   .file-badge{font-size:11px;padding:4px 10px;}
 
@@ -1045,6 +1047,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
       <button class="nav-tab"        id="tabAdmin"        onclick="switchView('admin')" style="visibility:hidden;pointer-events:none">⚙️ Admin</button>
     </div>
     <span class="period-badge" id="periodBadge">—</span>
+    <span class="version-badge" id="versionBadge" title="Versão do dashboard"></span>
     <button class="print-btn hidden" id="printBtn" onclick="triggerPrint()">🖨️ Imprimir Dashboard</button>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Alternar modo claro/escuro">🌙</button>
     <span class="file-badge" id="fileBadge" onclick="document.getElementById('fileInput').click()">📂 Trocar arquivo</span>
@@ -1609,6 +1612,14 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 'use strict';
 
 // ══════════════════════════════════════════════════════════════════════════════
+// VERSÃO DO DASHBOARD
+// ══════════════════════════════════════════════════════════════════════════════
+// Atualize estes dois valores sempre que publicar uma nova versão do arquivo.
+// Formato sugerido: "X.Y" e "DD/MM/AAAA".
+const APP_VERSION      = '1.0';
+const APP_VERSION_DATE = '09/08/2026';
+
+// ══════════════════════════════════════════════════════════════════════════════
 // PADRÕES DE CÓDIGO — leia antes de adicionar funcionalidades
 // ══════════════════════════════════════════════════════════════════════════════
 //
@@ -2043,6 +2054,9 @@ function _closeConfirm() {
 }
 // Cabeia os botões uma única vez ao carregar
 document.addEventListener('DOMContentLoaded', () => {
+  const _vb = document.getElementById('versionBadge');
+  if (_vb) _vb.textContent = 'v' + APP_VERSION + ' · ' + APP_VERSION_DATE;
+
   document.getElementById('confirmOkBtn').addEventListener('click', () => {
     const cb = STATE._confirmCallback;
     _closeConfirm();
