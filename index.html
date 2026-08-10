@@ -1042,7 +1042,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
     <div class="nav-tabs" id="navTabs" style="display:none">
       <button class="nav-tab active" id="tabDash"         onclick="switchView('dashboard')">📊 Dashboard</button>
       <button class="nav-tab"        id="tabBudget"       onclick="switchView('budget')">🎯 Orçamento</button>
-      <button class="nav-tab"        id="tabInvest"       onclick="switchView('invest')">📈 Simulador de Investimentos</button>
+      <button class="nav-tab"        id="tabInvest"       onclick="switchView('invest')">📈 Investimentos</button>
       <button class="nav-tab"        id="tabRegistros"    onclick="switchView('registros')">🔍 Registros</button>
       <button class="nav-tab"        id="tabAdmin"        onclick="switchView('admin')" style="visibility:hidden;pointer-events:none">⚙️ Admin</button>
     </div>
@@ -1616,8 +1616,10 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 // ══════════════════════════════════════════════════════════════════════════════
 // Atualize estes dois valores sempre que publicar uma nova versão do arquivo.
 // Formato sugerido: "X.Y" e "DD/MM/AAAA".
-const APP_VERSION      = '1.1';
-const APP_VERSION_DATE = '09/08/2026';
+const APP_VERSION      = '1.2';
+const APP_VERSION_DATE = '10/08/2026';
+// ⚠️ Ao mudar os valores acima, atualize também CACHE_NAME em service-worker.js
+// (linha com "dashboard-financeiro-vX.Y") para o mesmo número de versão.
 
 // ══════════════════════════════════════════════════════════════════════════════
 // PADRÕES DE CÓDIGO — leia antes de adicionar funcionalidades
@@ -2366,6 +2368,11 @@ function isResgate(t) {
 function isRendimento(t) {
   return ['dividendo','juro','provento','rendimento'].some(s => (t.subcat||'').toLowerCase().includes(s));
 }
+// Receita de investimento (resgates + rendimentos) — identificada pela categoria-pai,
+// que já cobre os 5 subtipos definidos em TREE.GANHOS.INVESTIMENTOS.
+function isRecInvest(t) {
+  return (t.cat||'').toLowerCase() === CATS.REC_INVEST_LOW;
+}
 
 function processData(transactions, fileName, sheetName, skipBudget = false) {
   if (!skipBudget) hideError();
@@ -2865,7 +2872,8 @@ function renderCatListUnified(tipo) {
     data = STATE.DATA.incTipos.map((tp, ti) => ({
       name: tp, color: STATE.DATA.incColors[tp],
       val: idxs.reduce((s, mi) => s + (STATE.DATA.incMonthly[ti][mi]||0), 0)
-    })).filter(d => d.val > 0).sort((a,b) => b.val - a.val);
+    })).filter(d => d.val > 0 && !isResgate({subcat:d.name}) && !isRendimento({subcat:d.name}))
+      .sort((a,b) => b.val - a.val);
   }
 
   if (!data.length) {
@@ -2987,6 +2995,8 @@ function renderHeatmapReceitas() {
     tipos: STATE.DATA.incTipos, tipoColors: STATE.DATA.incColors, monthly: STATE.DATA.incMonthly,
     colHeader: 'Subcategoria / Tipo',
     clickFn: 'drillIncTipo',
+    // Exclui tipos de receita de investimento — espelha o filtro do heatmap de Despesas
+    filterFn: tp => !isResgate({subcat:tp}) && !isRendimento({subcat:tp}),
     heatColor: (val, min, max) => val > 0 ? 'rgba(209,250,229,0.7)' : 'var(--bg-card)',
     heatColorUp: () => 'rgba(52,211,153,0.55)',
   });
@@ -3025,7 +3035,8 @@ function renderIncLegend() {
   const tiposComValor = STATE.DATA.incTipos.map((tp, ti) => {
     const val = idxs.reduce((s, mi) => s + (STATE.DATA.incMonthly[ti][mi]||0), 0);
     return { tp, val, color: STATE.DATA.incColors[tp]||'#0F6E56' };
-  }).filter(d => d.val > 0).sort((a,b) => b.val - a.val);
+  }).filter(d => d.val > 0 && !isResgate({subcat:d.tp}) && !isRendimento({subcat:d.tp}))
+    .sort((a,b) => b.val - a.val);
 
   const totalPeriodo = tiposComValor.reduce((s,d) => s+d.val, 0);
 
@@ -3215,7 +3226,11 @@ function renderStackedBar() {
   const idxs   = getVisibleIdxs();
   const labels = idxs.map(i => STATE.DATA.months[i].split('/')[0]);
   stackedBar.data.labels = labels;
-  stackedBar.data.datasets = STATE.DATA.incTipos.map((tp,ti) => ({
+  // Exclui tipos de receita de investimento (resgates/rendimentos) — só na aba Receitas
+  stackedBar.data.datasets = STATE.DATA.incTipos
+    .map((tp,ti) => ({ tp, ti })) // preserva índice original antes de filtrar
+    .filter(({tp}) => !isResgate({subcat:tp}) && !isRendimento({subcat:tp}))
+    .map(({tp,ti}) => ({
     label: tp,
     data: idxs.map(i => STATE.DATA.incMonthly[ti][i]||0),
     backgroundColor: STATE.DATA.incColors[tp],
@@ -3527,10 +3542,12 @@ function wireStackedBarClick() {
 
 // ── KPIs específicos ─────────────────────────────────────────────────────────
 function renderKPIsGeneric(cfg) {
-  // cfg: { source, excludeAportes, ids: { total, sub, avg, avgSub, max, maxSub }, label }
+  // cfg: { source, excludeAportes, excludeRecInvest, ids: { total, sub, avg, avgSub, max, maxSub }, label }
   const idxs    = getVisibleIdxs();
   const visKeys = getVisibleKeys();
-  const txs     = cfg.source.filter(t => visKeys.has(t.monthKey) && (!cfg.excludeAportes || !isAporte(t)));
+  const txs     = cfg.source.filter(t => visKeys.has(t.monthKey)
+    && (!cfg.excludeAportes   || !isAporte(t))
+    && (!cfg.excludeRecInvest || !isRecInvest(t)));
   const total   = txs.reduce((s,t) => s+t.valor, 0);
   const avg     = idxs.length ? total/idxs.length : 0;
   const maxTx   = txs.length ? txs.reduce((a,b) => b.valor>a.valor ? b : a) : null;
@@ -3545,7 +3562,7 @@ function renderKPIsGeneric(cfg) {
 function renderKPIsReceitas() {
   if (!STATE.DATA) return;
   renderKPIsGeneric({
-    source: STATE.DATA.ganhos, excludeAportes: false, label: 'entradas',
+    source: STATE.DATA.ganhos, excludeRecInvest: true, label: 'entradas',
     ids: { total:'kpiRecR', sub:'kpiRecSubR', avg:'kpiAvgR', avgSub:'kpiAvgSubR', max:'kpiMaxR', maxSub:'kpiMaxSubR' }
   });
 }
@@ -3572,7 +3589,7 @@ function renderBarReceitas() {
     });
   }
   barChartR.data.labels = labels;
-  barChartR.data.datasets[0].data = idxs.map(i => STATE.DATA.recMon[i]);
+  barChartR.data.datasets[0].data = idxs.map(i => STATE.DATA.barRecBase[i]);
   barChartR.update();
 }
 
@@ -3649,8 +3666,16 @@ function renderBarDespesas() {
 }
 
 function renderDonutReceitas2() {
+  // Exclui categoria de investimentos da rosca de receitas — espelha renderDonutDespesas2()
+  const sorted  = STATE.DATA.incCatSorted.filter(c => c.toLowerCase() !== CATS.REC_INVEST_LOW);
+  const filteredMonthly = STATE.DATA.incCatSorted
+    .map((_,ci) => STATE.DATA.incCatMonthly[ci])
+    .filter((_,ci) => STATE.DATA.incCatSorted[ci].toLowerCase() !== CATS.REC_INVEST_LOW);
+
   renderDonutToEl('donutReceitasWrapR','donutReceitasLegendR',
-    STATE.DATA.incCatSorted, STATE.DATA.incCatColors, STATE.DATA.incCatMonthly,
+    sorted,
+    Object.fromEntries(sorted.map(c=>[c, STATE.DATA.incCatColors[c]])),
+    filteredMonthly,
     getVisibleIdxs(), true, donutReceitasR, c => { donutReceitasR = c; });
 }
 function renderDonutDespesas2() {
@@ -3784,8 +3809,8 @@ function renderTopList(mode) {
   const isGasto = mode==='gastos';
   const source  = isGasto ? STATE.DATA.gastos : STATE.DATA.ganhos;
   const visKeys = getVisibleKeys();
-  // Exclui aportes de investimento da lista de gastos
-  const tx = [...source.filter(t => visKeys.has(t.monthKey) && (isGasto ? !isAporte(t) : true))]
+  // Exclui aportes/receitas de investimento das listas de gastos/receitas
+  const tx = [...source.filter(t => visKeys.has(t.monthKey) && (isGasto ? !isAporte(t) : !isRecInvest(t)))]
     .sort((a,b)=>b.valor-a.valor).slice(0,10);
   el.innerHTML='';
   if(!tx.length){el.innerHTML='<div class="top-empty-msg">Sem registros no período.</div>';return;}
@@ -6129,8 +6154,9 @@ function _diagCtx(monthIdx) {
   const ganhos  = STATE.DATA.ganhos.filter(t => visKeys.has(t.monthKey));
   const gastos  = STATE.DATA.gastos.filter(t => visKeys.has(t.monthKey));
   const gastosReais = gastos.filter(t => !isAporte(t));
+  const ganhosPuros = ganhos.filter(t => !isRecInvest(t)); // aba Receitas — exclui receita de investimento
   const mi      = (monthIdx !== undefined) ? monthIdx : idxs[0];
-  return { idxs, visKeys, period, nMonths, ganhos, gastos, gastosReais, mi };
+  return { idxs, visKeys, period, nMonths, ganhos, gastos, gastosReais, ganhosPuros, mi };
 }
 
 function _diagTotalReceitas(ctx) {
@@ -6153,6 +6179,32 @@ function _diagTotalReceitas(ctx) {
       {label:'📋 Por Tipo',      render: el => renderDiagByCat(el, byTipo, total, 'var(--teal)', ganhos, 'subcat')},
       {label:'🔢 Fórmula',       render: el => renderDiagFormula(el, buildFormulaReceitas(ganhos, idxs, total), 'var(--teal)')},
       {label:'📄 Transações',    render: el => renderDiagTx(el, [...ganhos].sort((a,b)=>b.valor-a.valor), true)},
+    ]
+  };
+}
+
+// Total Receitas — aba Receitas: exclui receita de investimento (resgates/rendimentos),
+// espelha _diagTotalDespesas() que exclui aportes de _diagTotalGastos().
+function _diagTotalReceitasPuras(ctx) {
+  const { ganhosPuros, idxs, period, nMonths } = ctx;
+  const total   = ganhosPuros.reduce((s,t)=>s+t.valor,0);
+  const byMonth = buildByMonth(ganhosPuros, idxs, 'var(--teal)');
+  const byCat   = buildByCat(ganhosPuros, 'cat', STATE.DATA.incCatColors, 'var(--teal)');
+  const byTipo  = buildByCat(ganhosPuros, 'subcat', STATE.DATA.incColors, 'var(--teal)');
+  return {
+    title:'Diagnóstico · Total Receitas', subtitle:`Período: ${period}`,
+    heroLabel:'TOTAL RECEITAS', heroVal: fmtR(total), heroColor:'var(--teal)',
+    heroMeta:[
+      {label:'Transações', value:`${ganhosPuros.length} entradas`},
+      {label:'Média/mês',  value: fmtR(total/nMonths)},
+      {label:'Meses',      value:`${nMonths}`},
+    ],
+    tabs:[
+      {label:'📅 Por Mês',      render: el => renderDiagByMonth(el, byMonth, total, 'var(--teal)', ganhosPuros, idxs)},
+      {label:'🗂️ Por Categoria', render: el => renderDiagByCat(el, byCat, total, 'var(--teal)', ganhosPuros, 'cat')},
+      {label:'📋 Por Tipo',      render: el => renderDiagByCat(el, byTipo, total, 'var(--teal)', ganhosPuros, 'subcat')},
+      {label:'🔢 Fórmula',       render: el => renderDiagFormula(el, buildFormulaReceitas(ganhosPuros, idxs, total), 'var(--teal)')},
+      {label:'📄 Transações',    render: el => renderDiagTx(el, [...ganhosPuros].sort((a,b)=>b.valor-a.valor), true)},
     ]
   };
 }
@@ -6232,10 +6284,11 @@ function _diagSaldoLiquido(ctx) {
 }
 
 function _diagMedia(ctx, tipo) {
-  const { gastos, ganhos, gastosReais, idxs, period, nMonths } = ctx;
+  const { gastos, ganhosPuros, gastosReais, idxs, period, nMonths } = ctx;
   const isGastos   = tipo === 'mediaGastos';
   const isDespesas = tipo === 'mediaDespesas';
-  const txs    = isGastos ? gastos : isDespesas ? gastosReais : ganhos;
+  // mediaReceitas é usada só na aba Receitas → exclui receita de investimento (ganhosPuros)
+  const txs    = isGastos ? gastos : isDespesas ? gastosReais : ganhosPuros;
   const color  = tipo === 'mediaReceitas' ? 'var(--teal)' : 'var(--orange)';
   const label  = tipo === 'mediaReceitas' ? 'receitas' : tipo === 'mediaGastos' ? 'gastos' : 'despesas';
   const titulo = tipo === 'mediaReceitas' ? 'Receitas' : tipo === 'mediaGastos' ? 'Gastos' : 'Despesas';
@@ -6258,9 +6311,10 @@ function _diagMedia(ctx, tipo) {
 }
 
 function _diagMaior(ctx, tipo) {
-  const { ganhos, gastosReais, period } = ctx;
+  const { ganhosPuros, gastosReais, period } = ctx;
   const isReceita = tipo === 'maiorReceita';
-  const txs   = isReceita ? ganhos : gastosReais;
+  // maiorReceita é usada só na aba Receitas → exclui receita de investimento (ganhosPuros)
+  const txs   = isReceita ? ganhosPuros : gastosReais;
   const color = isReceita ? 'var(--blue)' : 'var(--red)';
   const label = isReceita ? 'Receita' : 'Despesa';
   const maxTx = txs.length ? txs.reduce((a,b)=>b.valor>a.valor?b:a) : null;
@@ -6422,7 +6476,8 @@ function buildDiagConfig(kpiId, monthIdx) {
   const ctx = _diagCtx(monthIdx);
   let cfg = null;
 
-  if      (kpiId === 'totalReceitas' || kpiId === 'totalReceitasR') cfg = _diagTotalReceitas(ctx);
+  if      (kpiId === 'totalReceitas')                                cfg = _diagTotalReceitas(ctx);
+  else if (kpiId === 'totalReceitasR')                               cfg = _diagTotalReceitasPuras(ctx);
   else if (kpiId === 'totalGastos')                                  cfg = _diagTotalGastos(ctx);
   else if (kpiId === 'totalDespesas')                                cfg = _diagTotalDespesas(ctx);
   else if (kpiId === 'saldoLiquido')                                 cfg = _diagSaldoLiquido(ctx);

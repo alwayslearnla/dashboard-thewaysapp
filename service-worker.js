@@ -1,4 +1,7 @@
-const CACHE_NAME = "dashboard-financeiro-v9";
+// Mantenha este número sincronizado manualmente com APP_VERSION em index.html
+// a cada nova publicação — é isso que força o app instalado a descartar o
+// cache antigo e buscar os arquivos atualizados.
+const CACHE_NAME = "dashboard-financeiro-v1.2";
 
 const APP_SHELL = [
   "./index.html",
