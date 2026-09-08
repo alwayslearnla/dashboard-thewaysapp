@@ -1616,8 +1616,8 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 // ══════════════════════════════════════════════════════════════════════════════
 // Atualize estes dois valores sempre que publicar uma nova versão do arquivo.
 // Formato sugerido: "X.Y" e "DD/MM/AAAA".
-const APP_VERSION      = '1.3';
-const APP_VERSION_DATE = '11/08/2026';
+const APP_VERSION      = '1.4';
+const APP_VERSION_DATE = '08/09/2026';
 // ⚠️ Ao mudar os valores acima, atualize também CACHE_NAME em service-worker.js
 // (linha com "dashboard-financeiro-vX.Y") para o mesmo número de versão.
 
@@ -5692,7 +5692,7 @@ function exportarDAT() {
 
   // ── Cabeçalho em texto puro: só metadados de validade (nada sensível) ──────
   const now      = new Date();
-  const expires  = new Date(now); expires.setDate(expires.getDate() + 90);
+  const expires  = new Date(now); expires.setDate(expires.getDate() + 40);
   const cabecalho = JSON.stringify({ v: 1, exportedAt: now.toISOString(), expiresAt: expires.toISOString() });
 
   // ── Corpo cifrado com a chave derivada da senha ───────────────────────────
@@ -5750,7 +5750,7 @@ function exportarCorrecoes() {
   const key = _deriveKey(STATE._senhaAtual);
 
   const now     = new Date();
-  const expires = new Date(now); expires.setDate(expires.getDate() + 90);
+  const expires = new Date(now); expires.setDate(expires.getDate() + 40);
   const cabecalho = JSON.stringify({ v: 1, exportedAt: now.toISOString(), expiresAt: expires.toISOString() });
 
   const corpo = {
