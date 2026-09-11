@@ -1449,6 +1449,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
     <div class="reg-filter-group" style="justify-content:flex-end">
       <div class="reg-filter-label">&nbsp;</div>
       <div style="display:flex;gap:6px">
+        <button class="reg-btn" id="btnExcluirSelecionados" style="background:#dc2626;color:#fff;display:none" onclick="excluirRegistrosSelecionados()" disabled>🗑️ Excluir selecionados</button>
         <button class="reg-btn reg-btn-secondary" onclick="limparFiltrosReg()">✕ Limpar</button>
         <button class="reg-btn reg-btn-export" id="btnExportRegCSV" onclick="exportarRegistrosCSV()">⬇ Exportar CSV</button>
         <button class="reg-btn" id="btnExportRegXLSX" style="background:var(--navy);color:#fff" onclick="exportarRegistrosXLSX()">⬇ Exportar XLSX</button>
@@ -1462,6 +1463,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
     <table class="reg-table">
       <thead>
         <tr>
+          <th id="regSelectAllTh" style="width:36px"><input type="checkbox" id="regSelectAllChk" onchange="toggleSelecionarTodosReg(this.checked)" title="Selecionar todos"></th>
           <th data-col="date"    onclick="sortReg('date')">Data</th>
           <th data-col="desc"    onclick="sortReg('desc')">Descrição</th>
           <th data-col="tipo"    onclick="sortReg('tipo')">Tipo</th>
@@ -1616,8 +1618,8 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 // ══════════════════════════════════════════════════════════════════════════════
 // Atualize estes dois valores sempre que publicar uma nova versão do arquivo.
 // Formato sugerido: "X.Y" e "DD/MM/AAAA".
-const APP_VERSION      = '1.4';
-const APP_VERSION_DATE = '08/09/2026';
+const APP_VERSION      = '1.5';
+const APP_VERSION_DATE = '11/09/2026';
 // ⚠️ Ao mudar os valores acima, atualize também CACHE_NAME em service-worker.js
 // (linha com "dashboard-financeiro-vX.Y") para o mesmo número de versão.
 
@@ -1749,6 +1751,7 @@ const STATE = {
   // Tabela de Registros
   regSortCol: 'date',
   regSortDir: 'desc',
+  regSelecionados: new Set(), // txIdx dos registros marcados para exclusão em massa
 
   // Edição inline
   _editIdx: -1,
@@ -3296,11 +3299,17 @@ function handleFile(file) {
 function _ativarModo(modo) {
   STATE.MODO = modo;
   const isPlan = modo === 'planejador';
+  STATE.regSelecionados.clear();
 
   // Aba Admin — visível só para o planejador (usa visibility para não deslocar o layout)
   const tabAdmin = document.getElementById('tabAdmin');
   tabAdmin.style.visibility    = isPlan ? 'visible' : 'hidden';
   tabAdmin.style.pointerEvents = isPlan ? ''        : 'none';
+
+  // Coluna de seleção múltipla e botão de exclusão em massa — só no modo planejador
+  const selAllTh = document.getElementById('regSelectAllTh');
+  if (selAllTh) selAllTh.style.display = isPlan ? '' : 'none';
+  document.getElementById('btnExcluirSelecionados').style.display = isPlan ? '' : 'none';
 
   // Botão "Gerar .dat" — visível só para o planejador
   document.getElementById('btnGerarDat').style.display = isPlan ? '' : 'none';
@@ -5063,7 +5072,7 @@ function renderRegistros() {
   const hl = text => highlightText(text, re);
 
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="reg-empty"><div class="reg-empty-icon">🔍</div>Nenhum registro encontrado.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${STATE.MODO==='planejador'?9:8}" class="reg-empty"><div class="reg-empty-icon">🔍</div>Nenhum registro encontrado.</td></tr>`;
     return;
   }
 
@@ -5078,6 +5087,7 @@ function renderRegistros() {
     const recursoClean = (t.recurso||'').replace(/^\[.*?\]\s*/,'') || '—';
     const recursoFull  = t.recurso || '—';
     return `<tr>
+      ${STATE.MODO === 'planejador' ? `<td><input type="checkbox" class="reg-row-chk" data-txidx="${txIdx}" ${STATE.regSelecionados.has(txIdx)?'checked':''} onchange="toggleRegSelecionado(${txIdx}, this.checked)"></td>` : ''}
       <td style="white-space:nowrap;font-family:'DM Mono',monospace;font-size:12px;color:var(--mgray)">${dateStr}</td>
       <td style="max-width:280px">${hl(t.desc)}${t._edited && t._editedAt ? `<span class="edited-badge" title="Editado em ${t._editedAt.toLocaleString('pt-BR')}">✏ editado</span>` : ''}</td>
       <td><span class="reg-type-badge" style="background:${badgeBg};color:${badgeClr}">${isG?'Receita':'Despesa'}</span></td>
@@ -5091,6 +5101,8 @@ function renderRegistros() {
       </td>
     </tr>`;
   }).join('');
+
+  atualizarToolbarBulkReg();
 }
 
 function limparFiltrosReg() {
@@ -5372,6 +5384,77 @@ function deleteRegistro(txIdx) {
       renderInvestScreen();
     }
     showToast('Registro excluído.', 'ok');
+  });
+}
+
+// ── Seleção múltipla e exclusão em massa (Registros) ────────────────────────
+function toggleRegSelecionado(txIdx, checked) {
+  if (checked) STATE.regSelecionados.add(txIdx);
+  else STATE.regSelecionados.delete(txIdx);
+  atualizarToolbarBulkReg();
+}
+
+function toggleSelecionarTodosReg(checked) {
+  document.querySelectorAll('#regTableBody .reg-row-chk').forEach(chk => {
+    const idx = Number(chk.dataset.txidx);
+    chk.checked = checked;
+    if (checked) STATE.regSelecionados.add(idx);
+    else STATE.regSelecionados.delete(idx);
+  });
+  atualizarToolbarBulkReg();
+}
+
+function atualizarToolbarBulkReg() {
+  const btn = document.getElementById('btnExcluirSelecionados');
+  if (btn) {
+    const n = STATE.regSelecionados.size;
+    btn.textContent = n > 0 ? `🗑️ Excluir selecionados (${n})` : '🗑️ Excluir selecionados';
+    btn.disabled = n === 0;
+    btn.style.opacity = n === 0 ? '.5' : '';
+    btn.style.cursor = n === 0 ? 'default' : 'pointer';
+  }
+
+  const chks   = document.querySelectorAll('#regTableBody .reg-row-chk');
+  const chkAll = document.getElementById('regSelectAllChk');
+  if (chkAll) {
+    if (!chks.length) {
+      chkAll.checked = false;
+      chkAll.indeterminate = false;
+    } else {
+      const total = chks.length;
+      const marcados = Array.from(chks).filter(c => c.checked).length;
+      chkAll.checked = marcados === total;
+      chkAll.indeterminate = marcados > 0 && marcados < total;
+    }
+  }
+}
+
+function excluirRegistrosSelecionados() {
+  if (STATE.MODO !== 'planejador') return;
+  if (!STATE.DATA || STATE.regSelecionados.size === 0) return;
+
+  // Ordem decrescente para que o splice não desloque os índices ainda não removidos
+  const idxs = Array.from(STATE.regSelecionados).sort((a, b) => b - a);
+  const n = idxs.length;
+
+  showConfirm(`Excluir ${n} registro${n !== 1 ? 's' : ''} selecionado${n !== 1 ? 's' : ''}? Esta ação não pode ser desfeita.`, () => {
+    idxs.forEach(i => {
+      if (i >= 0 && i < STATE.DATA.transactions.length) STATE.DATA.transactions.splice(i, 1);
+    });
+    STATE.regSelecionados.clear();
+    rebuildDataFromTransactions();
+
+    const viewAtDelete = STATE.currentView;
+    if (viewAtDelete === 'registros') {
+      initRegistros();
+    } else if (viewAtDelete === 'dashboard') {
+      renderAll();
+    } else if (viewAtDelete === 'budget') {
+      renderBudgetScreen();
+    } else if (viewAtDelete === 'invest') {
+      renderInvestScreen();
+    }
+    showToast(`${n} registro${n !== 1 ? 's' : ''} excluído${n !== 1 ? 's' : ''}.`, 'ok');
   });
 }
 
