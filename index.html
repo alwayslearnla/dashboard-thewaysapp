@@ -1592,19 +1592,21 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
     <div class="modal-body">
       <table class="drilldown-table">
         <thead><tr>
+          <th id="modalSelectAllTh" style="width:36px"><input type="checkbox" id="modalSelectAllChk" title="Selecionar todos"></th>
           <th data-col="date">Data</th>
           <th data-col="desc">Descrição</th>
           <th data-col="cat">Categoria</th>
           <th data-col="subcat">Tipo</th>
           <th data-col="recurso">Recurso</th>
           <th data-col="val" style="text-align:right">Valor</th>
-          <th style="width:40px"></th>
+          <th style="width:70px"></th>
         </tr></thead>
         <tbody id="modalTableBody"></tbody>
       </table>
     </div>
     <div class="modal-footer">
       <span id="modalCount"></span>
+      <button class="btn-export" id="btnExcluirSelecionadosModal" style="background:#dc2626;border-color:#dc2626;color:#fff;display:none" disabled>🗑️ Excluir selecionados</button>
       <button class="btn-export" id="btnExportCSV">⬇ Exportar CSV</button>
     </div>
   </div>
@@ -1618,7 +1620,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 // ══════════════════════════════════════════════════════════════════════════════
 // Atualize estes dois valores sempre que publicar uma nova versão do arquivo.
 // Formato sugerido: "X.Y" e "DD/MM/AAAA".
-const APP_VERSION      = '1.5';
+const APP_VERSION      = '1.6';
 const APP_VERSION_DATE = '11/09/2026';
 // ⚠️ Ao mudar os valores acima, atualize também CACHE_NAME em service-worker.js
 // (linha com "dashboard-financeiro-vX.Y") para o mesmo número de versão.
@@ -1747,6 +1749,7 @@ const STATE = {
   modalSortCol:   'date',
   modalSortDir:   'desc',
   modalIsReceita: false,
+  modalSelecionados: new Set(), // txIdx dos registros marcados para exclusão em massa (drilldown)
 
   // Tabela de Registros
   regSortCol: 'date',
@@ -3366,21 +3369,17 @@ function openModal(title, subtitle, rows, isReceita=false) {
   STATE.modalRows = rows;
   STATE.modalIsReceita = isReceita;
   STATE.modalSortCol = 'date'; STATE.modalSortDir = 'desc';
+  STATE.modalSelecionados.clear();
   document.getElementById('modalTitle').textContent    = title;
   document.getElementById('modalSubtitle').textContent = subtitle;
   document.getElementById('modalSearch').value = '';
 
-  const total = rows.reduce((s,r) => s+r.valor, 0);
-  const avg   = rows.length ? total/rows.length : 0;
-  const max   = rows.length ? Math.max(...rows.map(r=>r.valor)) : 0;
-  const totalColor = isReceita ? 'var(--teal)' : 'var(--orange)';
-  const maxLabel   = isReceita ? 'Maior Receita' : 'Maior Gasto';
+  // Checkbox de seleção múltipla e botão de exclusão em massa — só no modo planejador
+  const isPlan = STATE.MODO === 'planejador';
+  document.getElementById('modalSelectAllTh').style.display = isPlan ? '' : 'none';
+  document.getElementById('btnExcluirSelecionadosModal').style.display = isPlan ? '' : 'none';
 
-  document.getElementById('modalStats').innerHTML = `
-    <div class="modal-stat"><div class="modal-stat-label">Total</div><div class="modal-stat-value" style="color:${totalColor}">${fmtR(total)}</div></div>
-    <div class="modal-stat"><div class="modal-stat-label">Registros</div><div class="modal-stat-value">${rows.length}</div></div>
-    <div class="modal-stat"><div class="modal-stat-label">Ticket Médio</div><div class="modal-stat-value">${fmtR(avg)}</div></div>
-    <div class="modal-stat"><div class="modal-stat-label">${maxLabel}</div><div class="modal-stat-value">${fmtR(max)}</div></div>`;
+  renderModalStats();
 
   filterModal();
   document.getElementById('modalOverlay').classList.add('open');
@@ -3388,10 +3387,102 @@ function openModal(title, subtitle, rows, isReceita=false) {
   setTimeout(() => document.getElementById('modalSearch').focus(), 200);
 }
 
+function renderModalStats() {
+  const rows = STATE.modalRows;
+  const total = rows.reduce((s,r) => s+r.valor, 0);
+  const avg   = rows.length ? total/rows.length : 0;
+  const max   = rows.length ? Math.max(...rows.map(r=>r.valor)) : 0;
+  const totalColor = STATE.modalIsReceita ? 'var(--teal)' : 'var(--orange)';
+  const maxLabel   = STATE.modalIsReceita ? 'Maior Receita' : 'Maior Gasto';
+
+  document.getElementById('modalStats').innerHTML = `
+    <div class="modal-stat"><div class="modal-stat-label">Total</div><div class="modal-stat-value" style="color:${totalColor}">${fmtR(total)}</div></div>
+    <div class="modal-stat"><div class="modal-stat-label">Registros</div><div class="modal-stat-value">${rows.length}</div></div>
+    <div class="modal-stat"><div class="modal-stat-label">Ticket Médio</div><div class="modal-stat-value">${fmtR(avg)}</div></div>
+    <div class="modal-stat"><div class="modal-stat-label">${maxLabel}</div><div class="modal-stat-value">${fmtR(max)}</div></div>`;
+}
+
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
   document.body.style.overflow = '';
   STATE._drillReopenFn = null;
+}
+
+// ── Exclusão dentro do modal de drilldown (individual e em massa) ───────────
+function excluirRegistroModal(txIdx) {
+  if (STATE.MODO !== 'planejador') return;
+  if (!STATE.DATA) return;
+  const t = STATE.DATA.transactions[txIdx];
+  if (!t) return;
+
+  showConfirm(`Excluir o registro "${t.desc}" de ${fmtR(t.valor)}? Esta ação não pode ser desfeita.`, () => {
+    STATE.DATA.transactions.splice(txIdx, 1);
+    STATE.modalSelecionados.delete(txIdx);
+    STATE.modalRows = STATE.modalRows.filter(r => r !== t);
+    rebuildDataFromTransactions();
+    renderModalStats();
+    filterModal();
+    _refreshViewAposExclusao();
+    showToast('Registro excluído.', 'ok');
+  });
+}
+
+function toggleSelecionarTodosModal(checked) {
+  document.querySelectorAll('#modalTableBody .modal-row-chk').forEach(chk => {
+    const idx = Number(chk.dataset.txidx);
+    chk.checked = checked;
+    if (checked) STATE.modalSelecionados.add(idx);
+    else STATE.modalSelecionados.delete(idx);
+  });
+  atualizarToolbarBulkModal();
+}
+
+function atualizarToolbarBulkModal() {
+  const btn = document.getElementById('btnExcluirSelecionadosModal');
+  if (btn) {
+    const n = STATE.modalSelecionados.size;
+    btn.textContent = n > 0 ? `🗑️ Excluir selecionados (${n})` : '🗑️ Excluir selecionados';
+    btn.disabled = n === 0;
+    btn.style.opacity = n === 0 ? '.5' : '';
+    btn.style.cursor = n === 0 ? 'default' : 'pointer';
+  }
+
+  const chks   = document.querySelectorAll('#modalTableBody .modal-row-chk');
+  const chkAll = document.getElementById('modalSelectAllChk');
+  if (chkAll) {
+    if (!chks.length) {
+      chkAll.checked = false;
+      chkAll.indeterminate = false;
+    } else {
+      const total = chks.length;
+      const marcados = Array.from(chks).filter(c => c.checked).length;
+      chkAll.checked = marcados === total;
+      chkAll.indeterminate = marcados > 0 && marcados < total;
+    }
+  }
+}
+
+function excluirRegistrosSelecionadosModal() {
+  if (STATE.MODO !== 'planejador') return;
+  if (!STATE.DATA || STATE.modalSelecionados.size === 0) return;
+
+  const idxs   = Array.from(STATE.modalSelecionados).sort((a, b) => b - a);
+  const n      = idxs.length;
+  const idxSet = new Set(idxs);
+  const removidos = STATE.DATA.transactions.filter((t, i) => idxSet.has(i));
+
+  showConfirm(`Excluir ${n} registro${n !== 1 ? 's' : ''} selecionado${n !== 1 ? 's' : ''}? Esta ação não pode ser desfeita.`, () => {
+    idxs.forEach(i => {
+      if (i >= 0 && i < STATE.DATA.transactions.length) STATE.DATA.transactions.splice(i, 1);
+    });
+    STATE.modalSelecionados.clear();
+    STATE.modalRows = STATE.modalRows.filter(r => !removidos.includes(r));
+    rebuildDataFromTransactions();
+    renderModalStats();
+    filterModal();
+    _refreshViewAposExclusao();
+    showToast(`${n} registro${n !== 1 ? 's' : ''} excluído${n !== 1 ? 's' : ''}.`, 'ok');
+  });
 }
 
 function filterModal() {
@@ -3444,13 +3535,17 @@ function renderModalTable(rows) {
     const recursoFull  = r.recurso || '—';
     const txIdx = STATE.DATA ? (r.idx ?? STATE.DATA.transactions.indexOf(r)) : -1;
     return `<tr>
+      ${STATE.MODO === 'planejador' ? `<td><input type="checkbox" class="modal-row-chk" data-txidx="${txIdx}" ${STATE.modalSelecionados.has(txIdx)?'checked':''}></td>` : ''}
       <td style="white-space:nowrap;font-family:'DM Mono',monospace;font-size:12px;color:var(--mgray)">${dateStr}</td>
       <td style="max-width:220px">${hl(r.desc)}${r._edited && r._editedAt ? `<span class="edited-badge" title="Editado em ${r._editedAt.toLocaleString('pt-BR')}">✏ editado</span>` : ''}</td>
       <td><span class="dd-badge" style="background:${catColor}22;color:${catColor}">${hl(r.cat)}</span></td>
       <td class="modal-subcat-cell">${hl(r.subcat)}</td>
       <td class="txt-sm-truncate" title="${escAttr(recursoFull)}">${escAttr(recursoClean)||'—'}</td>
       <td style="text-align:right;font-weight:600;font-family:'DM Mono',monospace;color:${valColor};white-space:nowrap">${fmtR(r.valor)}</td>
-      <td style="text-align:center"><button class="reg-btn-edit" data-txidx="${txIdx}">✏️</button></td>
+      <td style="text-align:center;white-space:nowrap">
+        <button class="reg-btn-edit" data-txidx="${txIdx}">✏️</button>
+        ${STATE.MODO === 'planejador' ? `<button class="reg-btn-delete" data-txidx-del="${txIdx}">🗑️</button>` : ''}
+      </td>
     </tr>`;
   }).join('');
 
@@ -3467,6 +3562,26 @@ function renderModalTable(rows) {
       openEditModal(idx);
     });
   });
+
+  // Delegação para os checkboxes de seleção múltipla das linhas do drilldown
+  tbody.querySelectorAll('.modal-row-chk[data-txidx]').forEach(chk => {
+    const idx = parseInt(chk.dataset.txidx, 10);
+    chk.addEventListener('change', () => {
+      if (chk.checked) STATE.modalSelecionados.add(idx);
+      else STATE.modalSelecionados.delete(idx);
+      atualizarToolbarBulkModal();
+    });
+  });
+
+  // Delegação para o botão de exclusão individual das linhas do drilldown
+  tbody.querySelectorAll('.reg-btn-delete[data-txidx-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.txidxDel, 10);
+      excluirRegistroModal(idx);
+    });
+  });
+
+  atualizarToolbarBulkModal();
 
   document.getElementById('modalCount').textContent =
     rows.length === STATE.modalRows.length
@@ -5443,19 +5558,24 @@ function excluirRegistrosSelecionados() {
     });
     STATE.regSelecionados.clear();
     rebuildDataFromTransactions();
-
-    const viewAtDelete = STATE.currentView;
-    if (viewAtDelete === 'registros') {
-      initRegistros();
-    } else if (viewAtDelete === 'dashboard') {
-      renderAll();
-    } else if (viewAtDelete === 'budget') {
-      renderBudgetScreen();
-    } else if (viewAtDelete === 'invest') {
-      renderInvestScreen();
-    }
+    _refreshViewAposExclusao();
     showToast(`${n} registro${n !== 1 ? 's' : ''} excluído${n !== 1 ? 's' : ''}.`, 'ok');
   });
+}
+
+// Atualiza a tela de fundo (dashboard/registros/orçamento/investimentos) após uma
+// exclusão feita de qualquer lugar (tabela de Registros ou modal de drilldown).
+function _refreshViewAposExclusao() {
+  const viewAtDelete = STATE.currentView;
+  if (viewAtDelete === 'registros') {
+    initRegistros();
+  } else if (viewAtDelete === 'dashboard') {
+    renderAll();
+  } else if (viewAtDelete === 'budget') {
+    renderBudgetScreen();
+  } else if (viewAtDelete === 'invest') {
+    renderInvestScreen();
+  }
 }
 
 function rebuildDataFromTransactions() {
@@ -6178,6 +6298,8 @@ document.getElementById('modalOverlay').addEventListener('click', e => {
 document.getElementById('modalSearch').addEventListener('input', filterModal);
 document.getElementById('modalSortSel').addEventListener('change', sortModal);
 document.getElementById('btnExportCSV').addEventListener('click', exportModalCSV);
+document.getElementById('modalSelectAllChk').addEventListener('change', e => toggleSelecionarTodosModal(e.target.checked));
+document.getElementById('btnExcluirSelecionadosModal').addEventListener('click', excluirRegistrosSelecionadosModal);
 document.querySelectorAll('.drilldown-table thead th[data-col]').forEach(th => {
   th.addEventListener('click', () => sortByCol(th.dataset.col));
 });
