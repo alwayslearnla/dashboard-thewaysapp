@@ -1410,6 +1410,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
         <option value="">Todos</option>
         <option value="Ganho">Receitas</option>
         <option value="Gasto">Despesas</option>
+        <option value="Outro">Transferências</option>
       </select>
     </div>
     <div class="reg-filter-group">
@@ -1499,6 +1500,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
       <select id="editTipoMov" onchange="onEditTipoMovChange()">
         <option value="Ganho">Receita</option>
         <option value="Gasto">Despesa</option>
+        <option value="Outro">Transferência</option>
       </select>
     </div>
     <div class="edit-field">
@@ -1620,7 +1622,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 // ══════════════════════════════════════════════════════════════════════════════
 // Atualize estes dois valores sempre que publicar uma nova versão do arquivo.
 // Formato sugerido: "X.Y" e "DD/MM/AAAA".
-const APP_VERSION      = '1.8';
+const APP_VERSION      = '2.0';
 const APP_VERSION_DATE = '11/09/2026';
 // ⚠️ Ao mudar os valores acima, atualize também CACHE_NAME em service-worker.js
 // (linha com "dashboard-financeiro-vX.Y") para o mesmo número de versão.
@@ -1676,6 +1678,9 @@ let TREE = {
     "PET": ["ACESSÓRIOS","ALIMENTAÇÃO","BANHO E TOSA","OUTROS (PET)","VESTUÁRIO","VETERINÁRIO"],
     "SAÚDE": ["ASSISTÊNCIA À SAÚDE","DENTISTA","MEDICAMENTOS","MÉDICOS E TERAPEUTAS","OUTROS (SAÚDE)","PLANO DE SAÚDE"],
     "TRANSPORTE": ["ALUGUEL","COMBUSTÍVEL","ESTACIONAMENTOS","IPVA + SEGURO OBRIGATÓRIO","LAVAGENS","MECÂNICO","METRÔ","MULTAS","ÔNIBUS","PEDÁGIO","OUTROS (TRANSPORTE)","PRESTAÇÃO","SEGURO","TÁXI/UBER","TREM"]
+  },
+  "OUTRO": {
+    "TRANSFERÊNCIAS": ["NÃO CATEGORIZADA - TRANSFERÊNCIAS","PAGAMENTO DE CARTÃO DE CRÉDITO","TRANSFERÊNCIAS MESMA TITULARIDADE"]
   }
 };
 
@@ -2313,9 +2318,11 @@ function parseExcel(file) {
         const rawVal  = cols.colValor ? row[cols.colValor] : null;
         if (!rawDate || rawVal == null) return;
 
-        // Ignora registros com tipo "Outro"
+        // Lançamentos "Outro" (transferências) entram normalmente na base — ficam
+        // visíveis em Registros, mas o tipo 'Outro' os exclui automaticamente de
+        // todos os cálculos e gráficos (que filtram explicitamente por 'Gasto'/'Ganho').
         const tipoMov = cols.colTipo ? String(row[cols.colTipo]||'').trim() : '';
-        if (tipoMov.toLowerCase() === 'outro') return;
+        const isOutro = tipoMov.toLowerCase() === 'outro';
 
         // Parse de data: aceita Date nativo, string dd/mm/yyyy, ou número serial Excel
         let date;
@@ -2353,7 +2360,7 @@ function parseExcel(file) {
           date,
           month,
           monthKey,
-          tipo  : isGasto ? 'Gasto' : 'Ganho',
+          tipo  : isOutro ? 'Outro' : (isGasto ? 'Gasto' : 'Ganho'),
           desc  : cols.colDesc ? String(row[cols.colDesc]||'Sem descrição') : 'Sem descrição',
           cat   : normalizeName(rawCat),
           subcat: normalizeName(rawSubcat),
@@ -3149,7 +3156,7 @@ function renderCanal() {
   if (!el || !STATE.DATA) return;
 
   const visKeys = getVisibleKeys();
-  const tx = STATE.DATA.transactions.filter(t => visKeys.has(t.monthKey));
+  const tx = STATE.DATA.transactions.filter(t => visKeys.has(t.monthKey) && t.tipo !== 'Outro');
 
   // Agrupa por recurso
   const map = new Map();
@@ -5220,11 +5227,13 @@ function renderRegistros() {
 
   tbody.innerHTML = rows.map((t,i) => {
     const isG      = t.tipo==='Ganho';
+    const isOutro  = t.tipo==='Outro';
     const dateStr  = t.date instanceof Date ? t.date.toLocaleDateString('pt-BR') : '—';
-    const valColor = isG ? 'var(--teal)' : 'var(--orange)';
-    const badgeBg  = isG ? 'var(--lteal)'   : 'var(--lorange)';
-    const badgeClr = isG ? 'var(--teal)'    : 'var(--orange)';
-    const catColor = isG ? (STATE.DATA.incCatColors[t.cat]||'#0F6E56') : (STATE.DATA.catColors[t.cat]||'#6B7280');
+    const valColor = isOutro ? 'var(--mgray)' : (isG ? 'var(--teal)' : 'var(--orange)');
+    const badgeBg  = isOutro ? 'rgba(107,114,128,.15)' : (isG ? 'var(--lteal)'   : 'var(--lorange)');
+    const badgeClr = isOutro ? 'var(--mgray)'           : (isG ? 'var(--teal)'    : 'var(--orange)');
+    const badgeTxt = isOutro ? 'Transferência' : (isG ? 'Receita' : 'Despesa');
+    const catColor = isOutro ? '#6B7280' : (isG ? (STATE.DATA.incCatColors[t.cat]||'#0F6E56') : (STATE.DATA.catColors[t.cat]||'#6B7280'));
     const txIdx = t.idx ?? STATE.DATA.transactions.indexOf(t);
     const recursoClean = (t.recurso||'').replace(/^\[.*?\]\s*/,'') || '—';
     const recursoFull  = t.recurso || '—';
@@ -5232,7 +5241,7 @@ function renderRegistros() {
       ${STATE.MODO === 'planejador' ? `<td><input type="checkbox" class="reg-row-chk" data-txidx="${txIdx}" ${STATE.regSelecionados.has(txIdx)?'checked':''} onchange="toggleRegSelecionado(${txIdx}, this.checked)"></td>` : ''}
       <td style="white-space:nowrap;font-family:'DM Mono',monospace;font-size:12px;color:var(--mgray)">${dateStr}</td>
       <td style="max-width:280px">${hl(t.desc)}${t._edited && t._editedAt ? `<span class="edited-badge" title="Editado em ${t._editedAt.toLocaleString('pt-BR')}">✏ editado</span>` : ''}</td>
-      <td><span class="reg-type-badge" style="background:${badgeBg};color:${badgeClr}">${isG?'Receita':'Despesa'}</span></td>
+      <td><span class="reg-type-badge" style="background:${badgeBg};color:${badgeClr}">${badgeTxt}</span></td>
       <td><span style="font-size:12px;font-weight:600;color:${catColor}">${hl(t.cat)}</span></td>
       <td class="reg-subcat-cell">${hl(t.subcat)}</td>
       <td class="txt-12-truncate" title="${escAttr(recursoFull)}">${hl(recursoClean)}</td>
@@ -5387,7 +5396,7 @@ function closeEditModal() {
 
 function populateEditSubcats(tipoMov) {
   const sel = document.getElementById('editSubcat');
-  const origem = tipoMov === 'Ganho' ? 'GANHOS' : 'GASTOS';
+  const origem = tipoMov === 'Ganho' ? 'GANHOS' : (tipoMov === 'Outro' ? 'OUTRO' : 'GASTOS');
   // Coleta todos os tipos de todas as categorias daquela origem
   const allTipos = [];
   for (const [cat, tipos] of Object.entries(TREE[origem] || {})) {
@@ -5413,7 +5422,7 @@ function onEditSubcatChange() {
 
 // Busca a categoria de um tipo em toda a árvore
 function findCatForTipo(tipoMov, subcat) {
-  const origem = tipoMov === 'Ganho' ? 'GANHOS' : 'GASTOS';
+  const origem = tipoMov === 'Ganho' ? 'GANHOS' : (tipoMov === 'Outro' ? 'OUTRO' : 'GASTOS');
   for (const [cat, tipos] of Object.entries(TREE[origem] || {})) {
     if (tipos.some(t => t.toLowerCase() === (subcat || '').toLowerCase())) return cat;
   }
@@ -5696,7 +5705,7 @@ function renderAdminTree() {
 
   let html = '';
   for (const [origem, cats] of Object.entries(TREE)) {
-    const origLabel = origem === 'GANHOS' ? '💚 GANHOS (Receitas)' : '🔴 GASTOS (Despesas)';
+    const origLabel = origem === 'GANHOS' ? '💚 GANHOS (Receitas)' : (origem === 'GASTOS' ? '🔴 GASTOS (Despesas)' : '🔄 OUTRO (Transferências — não entra nos cálculos)');
     html += `<div class="admin-section">
       <div class="admin-section-header">
         <span class="admin-section-title">${origLabel}</span>
