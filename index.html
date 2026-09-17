@@ -1622,7 +1622,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 // ══════════════════════════════════════════════════════════════════════════════
 // Atualize estes dois valores sempre que publicar uma nova versão do arquivo.
 // Formato sugerido: "X.Y" e "DD/MM/AAAA".
-const APP_VERSION      = '2.0';
+const APP_VERSION      = '2.1';
 const APP_VERSION_DATE = '11/09/2026';
 // ⚠️ Ao mudar os valores acima, atualize também CACHE_NAME em service-worker.js
 // (linha com "dashboard-financeiro-vX.Y") para o mesmo número de versão.
@@ -1952,11 +1952,12 @@ const formatK = v => {
 // Capitaliza primeira letra para agrupar "receitas fixas" com "Receitas Fixas"
 function normalizeName(str) {
   if (!str) return 'Outros';
-  // Capitaliza o primeiro caractere de cada palavra separada por espaço, '/' ou '('.
-  // Usa [...word] para iterar por code points Unicode, garantindo que letras
-  // acentuadas como 'á', 'ç', 'ê' sejam capitalizadas corretamente.
-  return str.trim().toLowerCase()
-    .replace(/(^|[\s\/\(])([^\s\/\(])/gu, (_, sep, ch) => sep + ch.toUpperCase());
+  // Capitaliza apenas a primeira letra da string inteira (case de sentença) —
+  // ex.: "DESPESAS PESSOAIS" e "despesas pessoais" viram "Despesas pessoais",
+  // não "Despesas Pessoais". Evita capitalizar palavras de ligação (e, à, de)
+  // no meio do nome, como aconteceria capitalizando cada palavra.
+  const s = str.trim().toLowerCase();
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 // Serializa Date para YYYY-MM-DD usando hora local — evita o shift de dia de toISOString()
