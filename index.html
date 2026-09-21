@@ -978,7 +978,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 #confirmOverlay.open{opacity:1;pointer-events:all;}
 .confirm-box{background:var(--bg-card);border-radius:14px;padding:24px 26px;max-width:380px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,.18);transform:translateY(8px);transition:transform .15s;}
 #confirmOverlay.open .confirm-box{transform:translateY(0);}
-.confirm-msg{font-size:14px;line-height:1.55;color:var(--text-primary);margin-bottom:20px;}
+.confirm-msg{font-size:14px;line-height:1.55;color:var(--text-primary);margin-bottom:20px;white-space:pre-line;}
 .confirm-actions{display:flex;gap:10px;justify-content:flex-end;}
 .confirm-btn-cancel{padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background .15s;}
 .confirm-btn-cancel:hover{background:var(--lgray);}
@@ -1622,8 +1622,8 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 // ══════════════════════════════════════════════════════════════════════════════
 // Atualize estes dois valores sempre que publicar uma nova versão do arquivo.
 // Formato sugerido: "X.Y" e "DD/MM/AAAA".
-const APP_VERSION      = '2.1';
-const APP_VERSION_DATE = '11/09/2026';
+const APP_VERSION      = '2.2';
+const APP_VERSION_DATE = '21/09/2026';
 // ⚠️ Ao mudar os valores acima, atualize também CACHE_NAME em service-worker.js
 // (linha com "dashboard-financeiro-vX.Y") para o mesmo número de versão.
 
@@ -2307,6 +2307,7 @@ function parseExcel(file) {
       // Isso elimina o realinhamento frágil por contador no exportarRegistrosXLSX.
       const dataRowsRaw = rawRows.slice(headerRowIdx + 1);
       const transactions = [];
+      const _tipoNaoReconhecido = new Map(); // valor bruto da coluna Gasto/Ganho → contagem, quando não é "Gasto"/"Ganho"/"Outro"
       dataRowsRaw.forEach((r, rawIdx) => {
         // Linha vazia ou só com erros Excel: pula sem contar
         if (!r || !Object.values(r).some(v => v !== null && !String(v).startsWith('#'))) return;
@@ -2319,11 +2320,26 @@ function parseExcel(file) {
         const rawVal  = cols.colValor ? row[cols.colValor] : null;
         if (!rawDate || rawVal == null) return;
 
-        // Lançamentos "Outro" (transferências) entram normalmente na base — ficam
-        // visíveis em Registros, mas o tipo 'Outro' os exclui automaticamente de
-        // todos os cálculos e gráficos (que filtram explicitamente por 'Gasto'/'Ganho').
+        // Classificação estrita da coluna Gasto/Ganho: só reconhece "Gasto", "Ganho"
+        // e "Outro". Qualquer outro texto é tratado como "Outro" (fica fora dos
+        // cálculos, visível só em Registros) e registrado em _tipoNaoReconhecido
+        // para avisar o usuário antes de finalizar a importação.
         const tipoMov = cols.colTipo ? String(row[cols.colTipo]||'').trim() : '';
-        const isOutro = tipoMov.toLowerCase() === 'outro';
+        let tipo;
+        if (!cols.colTipo) {
+          // Sem coluna de origem na planilha — mantém o fallback histórico pelo sinal do valor
+          tipo = parseFloat(rawVal) < 0 ? 'Gasto' : 'Ganho';
+        } else {
+          const tipoLower = tipoMov.toLowerCase();
+          if (tipoLower.includes('gasto'))      tipo = 'Gasto';
+          else if (tipoLower.includes('ganho')) tipo = 'Ganho';
+          else if (tipoLower === 'outro')       tipo = 'Outro';
+          else {
+            tipo = 'Outro';
+            const chave = tipoMov || '(vazio)';
+            _tipoNaoReconhecido.set(chave, (_tipoNaoReconhecido.get(chave)||0) + 1);
+          }
+        }
 
         // Parse de data: aceita Date nativo, string dd/mm/yyyy, ou número serial Excel
         let date;
@@ -2344,8 +2360,6 @@ function parseExcel(file) {
         const val = parseFloat(rawVal);
         if (isNaN(val)) return;
 
-        const isGasto = tipoMov.toLowerCase().includes('gasto') || val < 0;
-
         const monthKey = `${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`;
         const month    = new Date(date.getFullYear(), date.getMonth(), 1)
           .toLocaleDateString('pt-BR',{month:'short',year:'numeric'}).replace('. ','/');
@@ -2361,7 +2375,7 @@ function parseExcel(file) {
           date,
           month,
           monthKey,
-          tipo  : isOutro ? 'Outro' : (isGasto ? 'Gasto' : 'Ganho'),
+          tipo,
           desc  : cols.colDesc ? String(row[cols.colDesc]||'Sem descrição') : 'Sem descrição',
           cat   : normalizeName(rawCat),
           subcat: normalizeName(rawSubcat),
@@ -2373,10 +2387,26 @@ function parseExcel(file) {
 
       if (!transactions.length) { showError('Nenhuma transação válida encontrada.'); return; }
 
-      processData(transactions, file.name, sheetName);
-      // Armazena o índice do cabeçalho para que exportarRegistrosXLSX
-      // use o valor exato calculado neste parse, sem recalcular do binário.
-      if (STATE.DATA) STATE.DATA._headerRowIdx = _headerRowIdx;
+      const finalizarImportacao = () => {
+        processData(transactions, file.name, sheetName);
+        // Armazena o índice do cabeçalho para que exportarRegistrosXLSX
+        // use o valor exato calculado neste parse, sem recalcular do binário.
+        if (STATE.DATA) STATE.DATA._headerRowIdx = _headerRowIdx;
+      };
+
+      if (_tipoNaoReconhecido.size > 0) {
+        hideLoading();
+        const linhas = Array.from(_tipoNaoReconhecido.entries())
+          .map(([valor, n]) => `• "${valor}" (${n} registro${n!==1?'s':''})`)
+          .join('\n');
+        showConfirm(
+          `Encontramos valores inesperados na coluna "Gasto/Ganho" — só "Gasto", "Ganho" e "Outro" são reconhecidos:\n\n${linhas}\n\nEsses registros serão tratados como "Outro" (fora dos cálculos, visíveis só em Registros) até a planilha ser corrigida. Deseja continuar mesmo assim?`,
+          finalizarImportacao
+        );
+        return;
+      }
+
+      finalizarImportacao();
     } catch(err) {
       hideLoading();
       showError('Erro ao ler o arquivo: ' + err.message);
