@@ -973,6 +973,30 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 @keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(10px)}}
 
+/* ── Indicador de alterações não salvas — flutuante, fixo, fora do fluxo do header ── */
+#unsavedIndicator{
+  display:none;
+  position:fixed;
+  top:14px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:7000;
+  background:#F59E0B;
+  color:#fff;
+  padding:9px 20px;
+  border-radius:24px;
+  font-size:13px;
+  font-weight:600;
+  white-space:nowrap;
+  box-shadow:0 6px 20px rgba(180,83,9,.35);
+  align-items:center;
+  gap:6px;
+}
+#unsavedIndicator.show{display:flex;}
+@media(max-width:900px){
+  #unsavedIndicator{top:auto;bottom:16px;font-size:12px;padding:8px 16px;white-space:normal;text-align:center;max-width:92vw;}
+}
+
 /* ── Confirm dialog ── */
 #confirmOverlay{position:fixed;inset:0;background:rgba(15,25,40,.5);z-index:8000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .15s;}
 #confirmOverlay.open{opacity:1;pointer-events:all;}
@@ -1450,6 +1474,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
     <div class="reg-filter-group" style="justify-content:flex-end">
       <div class="reg-filter-label">&nbsp;</div>
       <div style="display:flex;gap:6px">
+        <button class="reg-btn" id="btnNovoRegistro" style="background:#0F6E56;color:#fff;display:none" onclick="abrirModalNovoRegistro()">➕ Novo Registro</button>
         <button class="reg-btn" id="btnExcluirSelecionados" style="background:#dc2626;color:#fff;display:none" onclick="excluirRegistrosSelecionados()" disabled>🗑️ Excluir selecionados</button>
         <button class="reg-btn reg-btn-secondary" onclick="limparFiltrosReg()">✕ Limpar</button>
         <button class="reg-btn reg-btn-export" id="btnExportRegCSV" onclick="exportarRegistrosCSV()">⬇ Exportar CSV</button>
@@ -1483,7 +1508,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 <!-- EDIT RECORD MODAL -->
 <div class="edit-overlay" id="editOverlay">
   <div class="edit-modal">
-    <h3>✏️ Editar Registro</h3>
+    <h3 id="editModalTitle">✏️ Editar Registro</h3>
     <div id="editModalHint" style="display:none;background:#F3F4F6;border-radius:8px;padding:8px 10px;font-size:11px;color:var(--mgray);margin-bottom:10px;line-height:1.4">
       ℹ️ Neste modo você pode ajustar apenas <strong>Receita/Despesa</strong> e <strong>Tipo/Categoria</strong>. Data, descrição e valor ficam bloqueados — seu planejador financeiro é quem controla esses campos.
     </div>
@@ -1516,6 +1541,10 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
     <div class="edit-field">
       <label>Valor (R$)</label>
       <input type="number" id="editValor" min="0" step="0.01" placeholder="0,00" style="font-family:'DM Mono',monospace">
+    </div>
+    <div class="edit-field" id="editRecursoField" style="display:none">
+      <label>Origem <span style="font-size:10px;color:var(--mgray);font-weight:400;text-transform:none">(opcional)</span></label>
+      <input type="text" id="editRecurso" placeholder="Ex: Itaú CC, Nubank Cartão…">
     </div>
     <div class="edit-actions">
       <button class="edit-btn-cancel" onclick="closeEditModal()">Cancelar</button>
@@ -1622,8 +1651,8 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 // ══════════════════════════════════════════════════════════════════════════════
 // Atualize estes dois valores sempre que publicar uma nova versão do arquivo.
 // Formato sugerido: "X.Y" e "DD/MM/AAAA".
-const APP_VERSION      = '2.2';
-const APP_VERSION_DATE = '21/09/2026';
+const APP_VERSION      = '2.4';
+const APP_VERSION_DATE = '22/09/2026';
 // ⚠️ Ao mudar os valores acima, atualize também CACHE_NAME em service-worker.js
 // (linha com "dashboard-financeiro-vX.Y") para o mesmo número de versão.
 
@@ -1783,8 +1812,13 @@ const STATE = {
 
   // Edição inline
   _editIdx: -1,
+  _novoRegistro: false, // true quando o modal de edição está aberto em modo "novo registro"
   // Função de reabertura do drilldown após edição (null = edição veio da tela Registros)
   _drillReopenFn: null,
+
+  // Alterações pendentes desde a última exportação completa (.dat) — controla
+  // o aviso de saída (beforeunload) e o indicador visual no cabeçalho.
+  _hasUnsavedChanges: false,
 
   // Admin
   _adminUnlocked: false,
@@ -3368,6 +3402,8 @@ function _ativarModo(modo) {
   STATE.MODO = modo;
   const isPlan = modo === 'planejador';
   STATE.regSelecionados.clear();
+  STATE._hasUnsavedChanges = false;
+  atualizarIndicadorAlteracoes();
 
   // Aba Admin — visível só para o planejador (usa visibility para não deslocar o layout)
   const tabAdmin = document.getElementById('tabAdmin');
@@ -3378,6 +3414,7 @@ function _ativarModo(modo) {
   const selAllTh = document.getElementById('regSelectAllTh');
   if (selAllTh) selAllTh.style.display = isPlan ? '' : 'none';
   document.getElementById('btnExcluirSelecionados').style.display = isPlan ? '' : 'none';
+  document.getElementById('btnNovoRegistro').style.display = isPlan ? '' : 'none';
 
   // Botão "Gerar .dat" — visível só para o planejador
   document.getElementById('btnGerarDat').style.display = isPlan ? '' : 'none';
@@ -3484,6 +3521,8 @@ function excluirRegistroModal(txIdx) {
     STATE.DATA.transactions.splice(txIdx, 1);
     STATE.modalSelecionados.delete(txIdx);
     STATE.modalRows = STATE.modalRows.filter(r => r !== t);
+    STATE._hasUnsavedChanges = true;
+    atualizarIndicadorAlteracoes();
     rebuildDataFromTransactions();
     renderModalStats();
     filterModal();
@@ -3542,6 +3581,8 @@ function excluirRegistrosSelecionadosModal() {
     });
     STATE.modalSelecionados.clear();
     STATE.modalRows = STATE.modalRows.filter(r => !removidos.includes(r));
+    STATE._hasUnsavedChanges = true;
+    atualizarIndicadorAlteracoes();
     rebuildDataFromTransactions();
     renderModalStats();
     filterModal();
@@ -5271,7 +5312,7 @@ function renderRegistros() {
     return `<tr>
       ${STATE.MODO === 'planejador' ? `<td><input type="checkbox" class="reg-row-chk" data-txidx="${txIdx}" ${STATE.regSelecionados.has(txIdx)?'checked':''} onchange="toggleRegSelecionado(${txIdx}, this.checked)"></td>` : ''}
       <td style="white-space:nowrap;font-family:'DM Mono',monospace;font-size:12px;color:var(--mgray)">${dateStr}</td>
-      <td style="max-width:280px">${hl(t.desc)}${t._edited && t._editedAt ? `<span class="edited-badge" title="Editado em ${t._editedAt.toLocaleString('pt-BR')}">✏ editado</span>` : ''}</td>
+      <td style="max-width:280px">${hl(t.desc)}${t._edited && t._editedAt ? `<span class="edited-badge" title="Editado em ${t._editedAt.toLocaleString('pt-BR')}">✏ editado</span>` : ''}${t._addedManually ? `<span class="edited-badge" style="background:#0F6E5622;color:#0F6E56" title="Adicionado direto no dashboard — não existe na planilha original">➕ adicionado</span>` : ''}</td>
       <td><span class="reg-type-badge" style="background:${badgeBg};color:${badgeClr}">${badgeTxt}</span></td>
       <td><span style="font-size:12px;font-weight:600;color:${catColor}">${hl(t.cat)}</span></td>
       <td class="reg-subcat-cell">${hl(t.subcat)}</td>
@@ -5322,8 +5363,8 @@ function exportarRegistrosCSV() {
 function exportarRegistrosXLSX() {
   if (!STATE.DATA || !STATE._exportMeta) { showToast('Nenhum arquivo carregado.', 'erro'); return; }
   try {
-    const edited = STATE.DATA.transactions.filter(tx => tx._edited);
-    if (!edited.length) { showToast('Nenhuma edição para exportar.', 'info'); return; }
+    const relevantes = STATE.DATA.transactions.filter(tx => tx._edited || tx._addedManually);
+    if (!relevantes.length) { showToast('Nenhuma alteração para exportar.', 'info'); return; }
 
     // Usa os metadados capturados no momento do parse — sem precisar do binário em memória.
     const { sheetName, headerRow, cols, budgetSheet, budgetSheetName } = STATE._exportMeta;
@@ -5374,6 +5415,8 @@ function exportarRegistrosXLSX() {
     }
 
     XLSX.writeFile(wbOut, (STATE.DATA.fileName||'dados').replace(/\.xlsx$/i,'') + '_editado.xlsx');
+    STATE._hasUnsavedChanges = false;
+    atualizarIndicadorAlteracoes();
     showToast('Exportado com sucesso!', 'ok');
   } catch(e) { showToast('Erro ao exportar: ' + e.message, 'erro'); }
 }
@@ -5382,7 +5425,39 @@ function exportarRegistrosXLSX() {
 // EDIÇÃO DE REGISTROS
 // ══════════════════════════════════════════════════════════════════════════════
 
+function abrirModalNovoRegistro() {
+  if (!STATE.DATA || STATE.MODO !== 'planejador') return;
+  STATE._novoRegistro = true;
+  STATE._editIdx = -1;
+  const overlay = document.getElementById('editOverlay');
+
+  document.getElementById('editModalTitle').textContent = '➕ Novo Registro';
+  document.getElementById('editData').value = toLocalDateStr(new Date());
+  document.getElementById('editDesc').value = '';
+  document.getElementById('editTipoMov').value = 'Gasto';
+  document.getElementById('editValor').value = '';
+  populateEditSubcats('Gasto');
+  document.getElementById('editSubcat').value = '';
+  document.getElementById('editCat').value = '';
+  document.getElementById('editRecursoField').style.display = '';
+  document.getElementById('editRecurso').value = '';
+
+  // Novo registro sempre editável por completo, mesmo que o último modal aberto
+  // tenha sido no modo cliente (campos ficam bloqueados só ao editar existentes)
+  ['editData', 'editDesc', 'editValor'].forEach(id => {
+    document.getElementById(id).disabled = false;
+  });
+  const hint = document.getElementById('editModalHint');
+  if (hint) hint.style.display = 'none';
+
+  overlay.classList.add('open');
+  document.getElementById('editDesc').focus();
+}
+
 function openEditModal(txIdx) {
+  STATE._novoRegistro = false;
+  document.getElementById('editModalTitle').textContent = '✏️ Editar Registro';
+  document.getElementById('editRecursoField').style.display = 'none';
   if (!STATE.DATA || txIdx < 0 || txIdx >= STATE.DATA.transactions.length) return;
   STATE._editIdx = txIdx;
   const t = STATE.DATA.transactions[txIdx];
@@ -5423,6 +5498,7 @@ function openEditModal(txIdx) {
 function closeEditModal() {
   document.getElementById('editOverlay').classList.remove('open');
   STATE._editIdx = -1;
+  STATE._novoRegistro = false;
 }
 
 function populateEditSubcats(tipoMov) {
@@ -5467,8 +5543,8 @@ function findCatForTipo(tipoMov, subcat) {
 }
 
 function saveEditRecord() {
-  if (STATE._editIdx < 0 || !STATE.DATA) return;
-  const t = STATE.DATA.transactions[STATE._editIdx];
+  if (!STATE.DATA) return;
+  if (!STATE._novoRegistro && STATE._editIdx < 0) return;
   const isCliente = STATE.MODO === 'cliente';
 
   const tipoMov = document.getElementById('editTipoMov').value;
@@ -5479,6 +5555,61 @@ function saveEditRecord() {
     showToast('Selecione o Tipo antes de salvar.', 'erro');
     return;
   }
+
+  if (STATE._novoRegistro) {
+    // ── Criação de um novo registro (só modo planejador) ──────────────────
+    if (isCliente) return;
+
+    const dateVal = document.getElementById('editData').value;
+    const desc    = document.getElementById('editDesc').value.trim();
+    const valor   = parseFloat(document.getElementById('editValor').value);
+    const recurso = document.getElementById('editRecurso').value.trim() || 'Recurso não informado';
+
+    if (!dateVal || !desc || isNaN(valor)) {
+      showToast('Preencha todos os campos obrigatórios (incluindo o Tipo).', 'erro');
+      return;
+    }
+
+    const parts    = dateVal.split('-');
+    const newDate  = new Date(+parts[0], +parts[1]-1, +parts[2]);
+    const newMonthKey = `${String(newDate.getMonth()+1).padStart(2,'0')}/${newDate.getFullYear()}`;
+    const newMonth = newDate.toLocaleDateString('pt-BR',{month:'short',year:'numeric'}).replace('. ','/');
+
+    STATE.DATA.transactions.push({
+      idx: STATE.DATA.transactions.length,
+      id:  STATE.DATA.transactions.length,
+      _excelRow: null, // não existe na planilha original — registro nativo do dashboard
+      _addedManually: true,
+      date: newDate, month: newMonth, monthKey: newMonthKey,
+      tipo: tipoMov, desc, cat, subcat, recurso,
+      valor: Math.abs(valor),
+      valorRaw: tipoMov==='Gasto' ? Math.abs(valor) : -Math.abs(valor),
+      _edited: false, _editedAt: null,
+    });
+
+    STATE._hasUnsavedChanges = true;
+    atualizarIndicadorAlteracoes();
+    rebuildDataFromTransactions();
+    _atualizaBtnCorrecoes();
+
+    const viewAtSave = STATE.currentView;
+    closeEditModal();
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (viewAtSave === 'registros') initRegistros();
+        else if (viewAtSave === 'dashboard') renderAll();
+        else if (viewAtSave === 'budget') renderBudgetScreen();
+        else if (viewAtSave === 'invest') renderInvestScreen();
+      });
+    });
+
+    showToast('Registro adicionado.', 'ok');
+    return;
+  }
+
+  // ── Edição de um registro existente ──────────────────────────────────────
+  const t = STATE.DATA.transactions[STATE._editIdx];
 
   // No modo cliente, data/descrição/valor são somente leitura — mantém os valores
   // originais independentemente do que estiver nos campos (bloqueados no HTML).
@@ -5511,6 +5642,8 @@ function saveEditRecord() {
   t.valorRaw = tipoMov==='Gasto' ? Math.abs(valor) : -Math.abs(valor);
   t._edited    = true;
   t._editedAt  = new Date();
+  STATE._hasUnsavedChanges = true;
+    atualizarIndicadorAlteracoes();
 
   // Reconstrói os dados internos
   rebuildDataFromTransactions();
@@ -5553,6 +5686,8 @@ function deleteRegistro(txIdx) {
   const dateStr = t.date instanceof Date ? t.date.toLocaleDateString('pt-BR') : '';
   showConfirm(`Excluir o registro "${t.desc}" (${dateStr}, ${fmtR(t.valor)})? Esta ação não pode ser desfeita.`, () => {
     STATE.DATA.transactions.splice(txIdx, 1);
+    STATE._hasUnsavedChanges = true;
+    atualizarIndicadorAlteracoes();
     rebuildDataFromTransactions();
 
     const viewAtDelete = STATE.currentView;
@@ -5585,6 +5720,25 @@ function toggleSelecionarTodosReg(checked) {
   });
   atualizarToolbarBulkReg();
 }
+
+// Mostra/esconde o indicador "Alterações não salvas" no cabeçalho. Chamado sempre
+// que STATE._hasUnsavedChanges muda (nova criação, edição, exclusão ou backup gerado).
+function atualizarIndicadorAlteracoes() {
+  const el = document.getElementById('unsavedIndicator');
+  if (el) el.classList.toggle('show', !!STATE._hasUnsavedChanges);
+}
+
+// Aviso nativo do navegador ao tentar fechar a aba/janela com alterações pendentes.
+// Por segurança do navegador, o texto exibido é fixo e definido por ele mesmo —
+// não é possível personalizar essa mensagem (vale para Chrome, Safari, Firefox e Edge).
+// Também não é garantido em PWAs instalados na tela inicial do iPhone (Safari/iOS
+// costuma ignorar esse aviso em modo standalone) — funciona de forma confiável em
+// navegador de computador, que é o uso principal deste alerta.
+window.addEventListener('beforeunload', (e) => {
+  if (!STATE._hasUnsavedChanges) return;
+  e.preventDefault();
+  e.returnValue = '';
+});
 
 function atualizarToolbarBulkReg() {
   const btn = document.getElementById('btnExcluirSelecionados');
@@ -5624,6 +5778,8 @@ function excluirRegistrosSelecionados() {
       if (i >= 0 && i < STATE.DATA.transactions.length) STATE.DATA.transactions.splice(i, 1);
     });
     STATE.regSelecionados.clear();
+    STATE._hasUnsavedChanges = true;
+    atualizarIndicadorAlteracoes();
     rebuildDataFromTransactions();
     _refreshViewAposExclusao();
     showToast(`${n} registro${n !== 1 ? 's' : ''} excluído${n !== 1 ? 's' : ''}.`, 'ok');
@@ -5992,7 +6148,11 @@ function exportarDAT() {
   const filename = name + '_' + now.toISOString().slice(0, 7) + '.dat';
 
   _compartilharOuBaixarArquivo(blob, filename, { title: 'Dashboard do cliente — The Ways' })
-    .finally(() => _abrirModalSenha(senha));
+    .finally(() => {
+      STATE._hasUnsavedChanges = false;
+      atualizarIndicadorAlteracoes();
+      _abrirModalSenha(senha);
+    });
 }
 
 // ── Correções (modo cliente → planejador) ────────────────────────────────────
@@ -7006,6 +7166,12 @@ document.addEventListener('keydown', e => {
 </script>
 <!-- TOAST CONTAINER -->
 <div id="toastContainer"></div>
+
+<!-- INDICADOR DE ALTERAÇÕES NÃO SALVAS — position:fixed, fora do fluxo do header,
+     para que aparecer/sumir nunca desloque o menu -->
+<div id="unsavedIndicator" title="Gere um .dat (aba Registros) para não perder essas alterações">
+  <span style="font-size:15px">⚠️</span> Você tem alterações não salvas — gere um backup (.dat) antes de sair
+</div>
 
 <!-- CONFIRM DIALOG -->
 <div id="confirmOverlay">
