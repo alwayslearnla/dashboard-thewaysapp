@@ -379,6 +379,8 @@ html.dark .diag-bar-bg{background:var(--border);}
 
 /* ── Tela de Registros ── */
 #registrosScreen{display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0;}
+#reservaScreen{display:none;flex-direction:column;flex:1;overflow-y:auto;min-height:0;}
+.reserva-main{padding:22px 32px;max-width:1400px;margin:0 auto;width:100%;box-sizing:border-box;}
 .reg-filters{background:var(--bg-card);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;flex-shrink:0;}
 .reg-filter-group{display:flex;flex-direction:column;gap:4px;}
 .reg-filter-label{font-size:10px;font-weight:600;color:var(--mgray);text-transform:uppercase;letter-spacing:.06em;}
@@ -417,6 +419,7 @@ html.dark .diag-bar-bg{background:var(--border);}
 .edit-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:none;align-items:center;justify-content:center;}
 .edit-overlay.open{display:flex;}
 .edit-modal{background:var(--bg-card);border-radius:16px;padding:28px 32px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;}
+.edit-modal.ativos-modal{max-width:680px;}
 .edit-modal h3{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:20px;}
 .edit-field{margin-bottom:14px;}
 .edit-field label{display:block;font-size:11px;font-weight:600;color:var(--mgray);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;}
@@ -977,7 +980,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 #unsavedIndicator{
   display:none;
   position:fixed;
-  top:14px;
+  top:110px;
   left:50%;
   transform:translateX(-50%);
   z-index:7000;
@@ -1068,6 +1071,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
       <button class="nav-tab"        id="tabBudget"       onclick="switchView('budget')">🎯 Orçamento</button>
       <button class="nav-tab"        id="tabInvest"       onclick="switchView('invest')">📈 Investimentos</button>
       <button class="nav-tab"        id="tabRegistros"    onclick="switchView('registros')">🔍 Registros</button>
+      <button class="nav-tab"        id="tabReserva"      onclick="switchView('reserva')">🛡️ Reserva</button>
       <button class="nav-tab"        id="tabAdmin"        onclick="switchView('admin')" style="visibility:hidden;pointer-events:none">⚙️ Admin</button>
     </div>
     <span class="period-badge" id="periodBadge">—</span>
@@ -1476,8 +1480,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
       <div style="display:flex;gap:6px">
         <button class="reg-btn" id="btnNovoRegistro" style="background:#0F6E56;color:#fff;display:none" onclick="abrirModalNovoRegistro()">➕ Novo Registro</button>
         <button class="reg-btn" id="btnExcluirSelecionados" style="background:#dc2626;color:#fff;display:none" onclick="excluirRegistrosSelecionados()" disabled>🗑️ Excluir selecionados</button>
-        <button class="reg-btn reg-btn-secondary" onclick="limparFiltrosReg()">✕ Limpar</button>
-        <button class="reg-btn reg-btn-export" id="btnExportRegCSV" onclick="exportarRegistrosCSV()">⬇ Exportar CSV</button>
+        <button class="reg-btn reg-btn-secondary" onclick="limparFiltrosReg()">✕ Limpar filtros</button>
         <button class="reg-btn" id="btnExportRegXLSX" style="background:var(--navy);color:#fff" onclick="exportarRegistrosXLSX()">⬇ Exportar XLSX</button>
         <button class="reg-btn" id="btnGerarDat" style="background:#7c3aed;color:#fff;display:none" onclick="exportarDAT()">⬇ Gerar .dat (cliente)</button>
         <button class="reg-btn" id="btnExportCorrecoes" style="background:#059669;color:#fff;display:none" onclick="exportarCorrecoes()">📤 Enviar Correções (.dat)</button>
@@ -1502,6 +1505,66 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
       </thead>
       <tbody id="regTableBody"></tbody>
     </table>
+  </div>
+</div>
+
+<!-- RESERVA DE EMERGÊNCIA SCREEN -->
+<div id="reservaScreen">
+  <div class="reserva-main">
+    <div class="print-header">
+      <strong>Reserva de Emergência</strong>
+    </div>
+
+    <div class="card grid-full">
+      <div class="card-title">Configuração</div>
+      <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;margin-top:14px">
+        <div>
+          <label style="display:block;font-size:11px;color:var(--mgray);font-weight:600;margin-bottom:6px;text-transform:uppercase">Base de cálculo da despesa</label>
+          <select id="reservaBaseCalculo" class="reg-select" onchange="onReservaConfigChange()" style="min-width:230px">
+            <option value="ultimo_mes">Último mês</option>
+            <option value="ultimos_3_meses">Últimos 3 meses (média)</option>
+            <option value="ultimos_6_meses">Últimos 6 meses (média)</option>
+            <option value="ultimos_12_meses">Últimos 12 meses (média)</option>
+            <option value="media_periodo">Média de todo o período</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;color:var(--mgray);font-weight:600;margin-bottom:6px;text-transform:uppercase">Meses de proteção desejados</label>
+          <select id="reservaMesesDesejados" class="reg-select" onchange="onReservaConfigChange()">
+            <option value="3">3 meses</option>
+            <option value="6">6 meses</option>
+            <option value="12">12 meses</option>
+            <option value="24">24 meses</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;color:var(--mgray);font-weight:600;margin-bottom:6px;text-transform:uppercase">Valor investido em reserva (R$)</label>
+          <button type="button" id="reservaValorInvestidoDisplay" onclick="abrirModalAtivos()" style="font-family:'DM Mono',monospace;font-size:14px;font-weight:600;padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);min-width:180px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <span id="reservaValorInvestidoTexto">R$ 0,00</span>
+            <span style="font-size:11px;color:var(--mgray);font-weight:500">🏦 gerenciar</span>
+          </button>
+        </div>
+        <button class="reg-btn" id="btnAtualizarReserva" style="background:#0F6E56;color:#fff" onclick="atualizarReserva()">💾 Atualizar e registrar</button>
+      </div>
+      <div id="reservaClienteAviso" style="display:none;margin-top:14px;font-size:12px;color:var(--mgray)">Somente o planejador pode atualizar esses valores.</div>
+    </div>
+
+    <div class="kpi-grid kpi-grid-4" id="reservaKpis" style="margin-top:20px"></div>
+
+    <div class="card grid-full card-top-gap">
+      <div class="card-title">Progresso da Reserva</div>
+      <div id="reservaProgressoWrap" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card grid-full card-top-gap">
+      <div class="card-title">Evolução ao Longo das Reuniões</div>
+      <div style="height:260px;margin-top:10px"><canvas id="reservaChart"></canvas></div>
+    </div>
+
+    <div class="card grid-full card-top-gap">
+      <div class="card-title">Histórico de Reuniões</div>
+      <div id="reservaHistoricoTable" style="margin-top:10px"></div>
+    </div>
   </div>
 </div>
 
@@ -1651,8 +1714,8 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 // ══════════════════════════════════════════════════════════════════════════════
 // Atualize estes dois valores sempre que publicar uma nova versão do arquivo.
 // Formato sugerido: "X.Y" e "DD/MM/AAAA".
-const APP_VERSION      = '2.4';
-const APP_VERSION_DATE = '22/09/2026';
+const APP_VERSION      = '3.4';
+const APP_VERSION_DATE = '23/09/2026';
 // ⚠️ Ao mudar os valores acima, atualize também CACHE_NAME em service-worker.js
 // (linha com "dashboard-financeiro-vX.Y") para o mesmo número de versão.
 
@@ -1819,6 +1882,9 @@ const STATE = {
   // Alterações pendentes desde a última exportação completa (.dat) — controla
   // o aviso de saída (beforeunload) e o indicador visual no cabeçalho.
   _hasUnsavedChanges: false,
+
+  // Reserva de Emergência
+  RESERVA: { mesesDesejados: 6, baseCalculo: 'ultimos_6_meses', valorInvestido: 0, historico: [], ativos: [] },
 
   // Admin
   _adminUnlocked: false,
@@ -2335,6 +2401,11 @@ function parseExcel(file) {
         budgetSheet: _budgetSheetName ? wb.Sheets[_budgetSheetName] : null,
         budgetSheetName: _budgetSheetName || null,
       };
+
+      // Reserva de Emergência: lê a aba dedicada se existir nesta planilha, senão
+      // começa do zero — nunca herda dados de um arquivo carregado anteriormente.
+      STATE.RESERVA = parseReservaSheet(wb);
+      STATE.RESERVA.ativos = parseAtivosReservaSheet(wb);
 
       // Itera sobre rawRows diretamente (a partir do cabeçalho+1) para preservar
       // o índice real de cada linha no Excel — gravado em _excelRow na transação.
@@ -3419,8 +3490,7 @@ function _ativarModo(modo) {
   // Botão "Gerar .dat" — visível só para o planejador
   document.getElementById('btnGerarDat').style.display = isPlan ? '' : 'none';
 
-  // Botões de exportação de registros (CSV e XLSX) — ocultos no modo cliente
-  document.getElementById('btnExportRegCSV').style.display  = isPlan ? '' : 'none';
+  // Botão de exportação de registros (XLSX) — oculto no modo cliente
   document.getElementById('btnExportRegXLSX').style.display = isPlan ? '' : 'none';
 
   // Botão CSV do modal de drill — oculto no modo cliente
@@ -4071,16 +4141,19 @@ function switchView(view) {
   document.getElementById('budgetScreen').style.display     = view==='budget'     ? 'flex' : 'none';
   document.getElementById('investScreen').style.display     = view==='invest'     ? 'flex' : 'none';
   document.getElementById('registrosScreen').style.display  = view==='registros'  ? 'flex' : 'none';
+  document.getElementById('reservaScreen').style.display    = view==='reserva'    ? 'flex' : 'none';
   document.getElementById('adminScreen').style.display      = view==='admin'      ? 'flex' : 'none';
   document.getElementById('tabDash').classList.toggle('active',      view==='dashboard');
   document.getElementById('tabBudget').classList.toggle('active',    view==='budget');
   document.getElementById('tabInvest').classList.toggle('active',    view==='invest');
   document.getElementById('tabRegistros').classList.toggle('active', view==='registros');
+  document.getElementById('tabReserva').classList.toggle('active',   view==='reserva');
   document.getElementById('tabAdmin').classList.toggle('active',     view==='admin');
   updatePrintButton();
   if (view === 'budget')    renderBudgetScreen();
   if (view === 'invest')    renderInvestScreen();
   if (view === 'registros') initRegistros();
+  if (view === 'reserva')   renderReservaScreen();
   if (view === 'admin')     initAdminScreen();
 }
 
@@ -4839,6 +4912,462 @@ function buildInvestYearButtons() {
   });
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// RESERVA DE EMERGÊNCIA
+// ══════════════════════════════════════════════════════════════════════════════
+
+function defaultReserva() {
+  return { mesesDesejados: 6, baseCalculo: 'ultimos_6_meses', valorInvestido: 0, historico: [], ativos: [] };
+}
+
+// Lê a aba "Reserva de Emergência" de um workbook, se existir (gravada por uma
+// exportação anterior deste próprio dashboard). Se não encontrar, começa do zero.
+function parseReservaSheet(wb) {
+  const nomeAba = wb.SheetNames.find(s => s.toLowerCase().includes('reserva'));
+  if (!nomeAba) return defaultReserva();
+  try {
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[nomeAba], { header: 1, defval: null });
+    const cfg = defaultReserva();
+    let histStart = -1, histHeader = null;
+
+    rows.forEach((row, i) => {
+      const label = String(row[0]||'').trim().toLowerCase();
+      if (label === 'meses desejados' && row[1] != null) cfg.mesesDesejados = parseInt(row[1], 10) || cfg.mesesDesejados;
+      else if (label === 'base de cálculo' && row[1] != null) cfg.baseCalculo = String(row[1]).trim();
+      else if (label === 'valor investido' && row[1] != null) cfg.valorInvestido = parseFloat(row[1]) || 0;
+      else if (label === 'data' && histStart === -1) { histStart = i; histHeader = row.map(h => String(h||'').trim().toLowerCase()); }
+    });
+
+    if (histStart > -1) {
+      const ci = {};
+      histHeader.forEach((h, idx) => { ci[h] = idx; });
+      for (let i = histStart + 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row[ci['data']] == null) continue;
+        let dataStr = row[ci['data']];
+        if (typeof dataStr === 'number') {
+          const d = XLSX.SSF.parse_date_code(dataStr);
+          dataStr = `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+        } else {
+          dataStr = String(dataStr).trim();
+        }
+        cfg.historico.push({
+          data: dataStr,
+          valorInvestido: parseFloat(row[ci['valor investido']]) || 0,
+          mesesDesejados: parseInt(row[ci['meses desejados']], 10) || cfg.mesesDesejados,
+          baseCalculo: row[ci['base de cálculo']] || cfg.baseCalculo,
+          despesaBase: parseFloat(row[ci['despesa base']]) || 0,
+          mesesProtecao: parseFloat(row[ci['meses de proteção']]) || 0,
+          valorAlvo: parseFloat(row[ci['valor alvo']]) || 0,
+        });
+      }
+    }
+    return cfg;
+  } catch (e) {
+    console.error('Erro ao ler aba "Reserva de Emergência":', e);
+    return defaultReserva();
+  }
+}
+
+// Lê a aba "Ativos Reserva" de um workbook (posição atual + histórico superado),
+// gravada por uma exportação anterior deste dashboard. Se não existir, começa vazio.
+function parseAtivosReservaSheet(wb) {
+  const nomeAba = wb.SheetNames.find(s => s.toLowerCase().includes('ativos') && s.toLowerCase().includes('reserva'));
+  if (!nomeAba) return [];
+  try {
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[nomeAba], { header: 1, defval: null });
+    const toDataStr = (v) => {
+      if (v == null) return null;
+      if (typeof v === 'number') {
+        const d = XLSX.SSF.parse_date_code(v);
+        return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+      }
+      return String(v).trim();
+    };
+
+    const ativos = [];
+    let i = 1; // pula o cabeçalho da primeira tabela
+    for (; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row || row[0] == null) break; // linha em branco = fim da tabela de posições atuais
+      ativos.push({
+        instituicao: String(row[0]).trim(),
+        ativo: String(row[1]).trim(),
+        data: toDataStr(row[2]),
+        valor: parseFloat(row[3]) || 0,
+        historico: [],
+      });
+    }
+
+    // Pula linha em branco + "Histórico (superado)" + cabeçalho da segunda tabela
+    i += 3;
+    for (; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row || row[0] == null) continue;
+      const inst = String(row[0]).trim(), at = String(row[1]).trim();
+      const alvo = ativos.find(a => a.instituicao === inst && a.ativo === at);
+      const ponto = { instituicao: inst, ativo: at, data: toDataStr(row[2]), valor: parseFloat(row[3]) || 0 };
+      if (alvo) alvo.historico.push(ponto);
+    }
+
+    return ativos;
+  } catch (e) {
+    console.error('Erro ao ler aba "Ativos Reserva":', e);
+    return [];
+  }
+}
+
+const RESERVA_LABELS = {
+  ultimo_mes:        'Último mês',
+  ultimos_3_meses:   'Média dos últimos 3 meses',
+  ultimos_6_meses:   'Média dos últimos 6 meses',
+  ultimos_12_meses:  'Média dos últimos 12 meses',
+  media_periodo:     'Média de todo o período',
+};
+
+function _mediaUltimosN(arr, n) {
+  const slice = arr.slice(Math.max(0, arr.length - n));
+  return slice.length ? slice.reduce((s,v)=>s+v,0) / slice.length : 0;
+}
+
+// Reaproveita STATE.DATA.barDespesas — já calculado em processData() e já exclui
+// a categoria Investimentos (não é "despesa" pra fins de reserva de emergência).
+// Transações tipo 'Outro' (transferências) já ficam fora por não serem 'Gasto'.
+function computeDespesaBase(baseCalculo) {
+  const arr = STATE.DATA && STATE.DATA.barDespesas;
+  if (!arr || !arr.length) return 0;
+  switch (baseCalculo) {
+    case 'ultimo_mes':       return arr[arr.length-1] || 0;
+    case 'ultimos_3_meses':  return _mediaUltimosN(arr, 3);
+    case 'ultimos_6_meses':  return _mediaUltimosN(arr, 6);
+    case 'ultimos_12_meses': return _mediaUltimosN(arr, 12);
+    case 'media_periodo':    return arr.reduce((s,v)=>s+v,0) / arr.length;
+    default:                 return arr[arr.length-1] || 0;
+  }
+}
+
+// Máscara monetária brasileira (1.234,56), aplicada em tempo real, sem lib externa.
+// O valor numérico de verdade fica em input.dataset.valor — .value é só o texto exibido.
+// Máscara monetária genérica (reaproveitada pelo campo "Valor" do modal de Ativos).
+function _aplicarMascaraMoeda(input) {
+  let digits = input.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+  if (!digits) { input.value = ''; input.dataset.valor = '0'; return; }
+  const centavos = parseInt(digits, 10);
+  const str = String(centavos).padStart(3, '0');
+  const inteiro = str.slice(0, -2).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  input.value = `${inteiro},${str.slice(-2)}`;
+  input.dataset.valor = (centavos / 100).toString();
+}
+function _setValorMoedaInput(input, valor) {
+  const centavos = Math.round((valor || 0) * 100);
+  if (!centavos) { input.value = ''; input.dataset.valor = '0'; return; }
+  const str = String(centavos).padStart(3, '0');
+  const inteiro = str.slice(0, -2).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  input.value = `${inteiro},${str.slice(-2)}`;
+  input.dataset.valor = (centavos / 100).toString();
+}
+function _aplicarMascaraAtivoValor() {
+  _aplicarMascaraMoeda(document.getElementById('ativoValor'));
+}
+
+function _somaAtivos() {
+  return (STATE.RESERVA.ativos || []).reduce((s, a) => s + (a.valor || 0), 0);
+}
+
+function _lerReservaInputs() {
+  return {
+    baseCalculo:     document.getElementById('reservaBaseCalculo').value,
+    mesesDesejados:  parseInt(document.getElementById('reservaMesesDesejados').value, 10) || 6,
+    valorInvestido:  _somaAtivos(),
+  };
+}
+
+// ── Modal de Ativos da Reserva ───────────────────────────────────────────────
+let _editandoAtivoIdx = -1; // -1 = formulário em modo "adicionar novo"
+
+function abrirModalAtivos() {
+  if (!STATE.DATA) return;
+  _editandoAtivoIdx = -1;
+  _limparFormAtivo();
+  renderListaAtivos();
+  document.getElementById('ativosOverlay').classList.add('open');
+}
+
+function fecharModalAtivos() {
+  document.getElementById('ativosOverlay').classList.remove('open');
+  // Reflete o total atualizado na tela principal, sem gravar histórico —
+  // só o botão "Atualizar e registrar" da tela principal faz isso.
+  onReservaConfigChange();
+}
+
+function _limparFormAtivo() {
+  document.getElementById('ativoData').value = toLocalDateStr(new Date());
+  document.getElementById('ativoInstituicao').value = '';
+  document.getElementById('ativoNome').value = '';
+  const valorInput = document.getElementById('ativoValor');
+  valorInput.value = ''; valorInput.dataset.valor = '0';
+  _editandoAtivoIdx = -1;
+  document.getElementById('btnSalvarAtivo').textContent = '+ Adicionar';
+  document.getElementById('btnCancelarEdicaoAtivo').style.display = 'none';
+}
+
+function salvarAtivo() {
+  const data         = document.getElementById('ativoData').value;
+  const instituicao  = document.getElementById('ativoInstituicao').value.trim();
+  const nome         = document.getElementById('ativoNome').value.trim();
+  const valor        = parseFloat(document.getElementById('ativoValor').dataset.valor || '0') || 0;
+
+  if (!data || !instituicao || !nome || valor <= 0) {
+    showToast('Preencha data, instituição, ativo e um valor válido.', 'erro');
+    return;
+  }
+
+  if (_editandoAtivoIdx === -1) {
+    STATE.RESERVA.ativos.push({ instituicao, ativo: nome, data, valor, historico: [] });
+  } else {
+    const alvo = STATE.RESERVA.ativos[_editandoAtivoIdx];
+    // Guarda a versão anterior no histórico antes de sobrescrever — nada se perde,
+    // mas só a mais recente fica visível/editável no dia a dia.
+    alvo.historico = alvo.historico || [];
+    alvo.historico.push({ data: alvo.data, valor: alvo.valor, instituicao: alvo.instituicao, ativo: alvo.ativo });
+    alvo.instituicao = instituicao;
+    alvo.ativo       = nome;
+    alvo.data        = data;
+    alvo.valor       = valor;
+  }
+
+  STATE._hasUnsavedChanges = true;
+  atualizarIndicadorAlteracoes();
+  _limparFormAtivo();
+  renderListaAtivos();
+}
+
+function editarAtivo(idx) {
+  const a = STATE.RESERVA.ativos[idx];
+  if (!a) return;
+  _editandoAtivoIdx = idx;
+  document.getElementById('ativoData').value = a.data;
+  document.getElementById('ativoInstituicao').value = a.instituicao;
+  document.getElementById('ativoNome').value = a.ativo;
+  _setValorMoedaInput(document.getElementById('ativoValor'), a.valor);
+  document.getElementById('btnSalvarAtivo').textContent = '💾 Salvar edição';
+  document.getElementById('btnCancelarEdicaoAtivo').style.display = '';
+}
+
+function cancelarEdicaoAtivo() {
+  _limparFormAtivo();
+}
+
+function excluirAtivo(idx) {
+  const a = STATE.RESERVA.ativos[idx];
+  if (!a) return;
+  showConfirm(`Excluir o ativo "${a.instituicao} — ${a.ativo}" (${fmtR(a.valor)})? Isso remove também o histórico dele. Esta ação não pode ser desfeita.`, () => {
+    STATE.RESERVA.ativos.splice(idx, 1);
+    STATE._hasUnsavedChanges = true;
+    atualizarIndicadorAlteracoes();
+    if (_editandoAtivoIdx === idx) _limparFormAtivo();
+    renderListaAtivos();
+    showToast('Ativo excluído.', 'ok');
+  });
+}
+
+function renderListaAtivos() {
+  const el = document.getElementById('ativosLista');
+  const ativos = STATE.RESERVA.ativos || [];
+  if (!ativos.length) {
+    el.innerHTML = `<div class="reg-empty" style="padding:24px"><div class="reg-empty-icon">🏦</div>Nenhum ativo cadastrado ainda.</div>`;
+  } else {
+    el.innerHTML = `
+      <table class="reg-table">
+        <thead><tr><th>Instituição</th><th>Ativo</th><th>Data</th><th style="text-align:right">Valor</th><th style="width:70px"></th></tr></thead>
+        <tbody>
+          ${ativos.map((a, i) => `
+            <tr>
+              <td>${escAttr(a.instituicao)}</td>
+              <td>${escAttr(a.ativo)}</td>
+              <td style="white-space:nowrap;font-family:'DM Mono',monospace;font-size:12px;color:var(--mgray)">${new Date(a.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
+              <td style="text-align:right;font-family:'DM Mono',monospace;font-weight:600">${fmtR(a.valor)}</td>
+              <td style="text-align:center;white-space:nowrap">
+                <button class="reg-btn-edit" onclick="editarAtivo(${i})">✏️</button>
+                <button class="reg-btn-delete" onclick="excluirAtivo(${i})">🗑️</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+  document.getElementById('ativosTotalTexto').textContent = fmtR(_somaAtivos());
+}
+
+// Chamado a cada mudança nos campos (seleção ou digitação) — atualiza os KPIs e a
+// barra de progresso em tempo real, sem gravar nada em STATE.RESERVA ou no histórico.
+// Só o botão "Atualizar e registrar" grava de fato.
+function onReservaConfigChange() {
+  if (!STATE.DATA) return;
+  const cfg = _lerReservaInputs();
+  const despesaBase = computeDespesaBase(cfg.baseCalculo);
+  const valorAlvo   = despesaBase * cfg.mesesDesejados;
+  const mesesProtecao = despesaBase > 0 ? cfg.valorInvestido / despesaBase : 0;
+  _renderReservaKpisEProgresso(cfg, despesaBase, valorAlvo, mesesProtecao);
+}
+
+function _renderReservaKpisEProgresso(cfg, despesaBase, valorAlvo, mesesProtecao) {
+  const atingiu = mesesProtecao >= cfg.mesesDesejados;
+  const corProtecao = atingiu ? 'var(--teal)' : 'var(--orange)';
+
+  document.getElementById('reservaKpis').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-label"><span class="kpi-dot" style="background:#6B7280"></span>Despesa-base (${RESERVA_LABELS[cfg.baseCalculo]||''})</div>
+      <div class="kpi-value">${fmtR(despesaBase)}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label"><span class="kpi-dot" style="background:#7c3aed"></span>Reserva Alvo (${cfg.mesesDesejados} meses)</div>
+      <div class="kpi-value" style="color:#7c3aed">${fmtR(valorAlvo)}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label"><span class="kpi-dot" style="background:#2563A8"></span>Valor Investido Hoje</div>
+      <div class="kpi-value" style="color:#2563A8">${fmtR(cfg.valorInvestido)}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label"><span class="kpi-dot" style="background:${corProtecao}"></span>Meses de Proteção Atual</div>
+      <div class="kpi-value" style="color:${corProtecao}">${mesesProtecao.toFixed(1)}</div>
+    </div>`;
+
+  const pct = valorAlvo > 0 ? Math.min(100, (cfg.valorInvestido / valorAlvo) * 100) : 0;
+  document.getElementById('reservaProgressoWrap').innerHTML = `
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px">
+      <span>${fmtR(cfg.valorInvestido)} de ${fmtR(valorAlvo)}</span>
+      <span style="font-weight:700;color:${corProtecao}">${pct.toFixed(0)}%${atingiu ? ' — meta atingida' : ''}</span>
+    </div>
+    <div style="background:var(--border);border-radius:8px;height:14px;overflow:hidden">
+      <div style="width:${pct}%;height:100%;background:${corProtecao};transition:width .3s"></div>
+    </div>`;
+}
+
+function atualizarReserva() {
+  if (!STATE.DATA || STATE.MODO !== 'planejador') return;
+  const cfg = _lerReservaInputs();
+
+  if (cfg.valorInvestido <= 0) {
+    showToast('Cadastre pelo menos um ativo antes de registrar.', 'erro');
+    return;
+  }
+
+  const despesaBase    = computeDespesaBase(cfg.baseCalculo);
+  const valorAlvo      = despesaBase * cfg.mesesDesejados;
+  const mesesProtecao  = despesaBase > 0 ? cfg.valorInvestido / despesaBase : 0;
+
+  STATE.RESERVA.baseCalculo    = cfg.baseCalculo;
+  STATE.RESERVA.mesesDesejados = cfg.mesesDesejados;
+  STATE.RESERVA.valorInvestido = cfg.valorInvestido;
+  STATE.RESERVA.historico.push({
+    data: toLocalDateStr(new Date()),
+    valorInvestido: cfg.valorInvestido,
+    mesesDesejados: cfg.mesesDesejados,
+    baseCalculo: cfg.baseCalculo,
+    despesaBase, mesesProtecao, valorAlvo,
+  });
+
+  STATE._hasUnsavedChanges = true;
+  atualizarIndicadorAlteracoes();
+
+  renderReservaScreen();
+  showToast('Reserva atualizada e registrada no histórico.', 'ok');
+}
+
+function renderReservaHistorico() {
+  const el = document.getElementById('reservaHistoricoTable');
+  if (!el) return;
+  const hist = STATE.RESERVA.historico;
+  if (!hist.length) {
+    el.innerHTML = `<div class="reg-empty" style="padding:30px"><div class="reg-empty-icon">🛡️</div>Nenhum registro ainda. Clique em "Atualizar e registrar" para começar o histórico.</div>`;
+    return;
+  }
+  const linhas = hist.slice().reverse().map(h => {
+    const dataFmt = h.data ? new Date(h.data+'T00:00:00').toLocaleDateString('pt-BR') : '—';
+    const atingiu = h.mesesProtecao >= h.mesesDesejados;
+    return `<tr>
+      <td style="white-space:nowrap;font-family:'DM Mono',monospace;font-size:12px;color:var(--mgray)">${dataFmt}</td>
+      <td>${fmtR(h.valorInvestido)}</td>
+      <td>${RESERVA_LABELS[h.baseCalculo]||h.baseCalculo}</td>
+      <td>${h.mesesDesejados} meses</td>
+      <td style="font-weight:600;color:${atingiu?'var(--teal)':'var(--orange)'}">${h.mesesProtecao.toFixed(1)} meses</td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `
+    <table class="reg-table">
+      <thead><tr>
+        <th>Data</th><th>Valor Investido</th><th>Base de Cálculo</th><th>Meta</th><th>Proteção Alcançada</th>
+      </tr></thead>
+      <tbody>${linhas}</tbody>
+    </table>`;
+}
+
+let reservaChart = null;
+function renderReservaChart() {
+  const canvas = document.getElementById('reservaChart');
+  if (!canvas) return;
+  const hist = STATE.RESERVA.historico;
+  if (reservaChart) { reservaChart.destroy(); reservaChart = null; }
+  if (!hist.length) return;
+
+  const labels = hist.map(h => h.data ? new Date(h.data+'T00:00:00').toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}) : '—');
+  reservaChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Meses de proteção',
+          data: hist.map(h => h.mesesProtecao),
+          borderColor: '#0F6E56', backgroundColor: '#0F6E5622',
+          fill: true, tension: .3, pointRadius: 4, pointBackgroundColor: '#0F6E56',
+        },
+        {
+          label: 'Meta desejada',
+          data: hist.map(h => h.mesesDesejados),
+          borderColor: '#7c3aed', borderDash: [6,4],
+          fill: false, tension: 0, pointRadius: 0,
+        },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11, family: 'DM Sans' } } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11, family: 'DM Sans' } } },
+        y: { beginAtZero: true, grid: { display: false }, ticks: { font: { size: 10 } } },
+      },
+    },
+  });
+}
+
+function renderReservaScreen() {
+  if (!STATE.DATA) return;
+  const isPlan = STATE.MODO === 'planejador';
+
+  document.getElementById('reservaBaseCalculo').value    = STATE.RESERVA.baseCalculo;
+  document.getElementById('reservaMesesDesejados').value = String(STATE.RESERVA.mesesDesejados);
+  document.getElementById('reservaValorInvestidoTexto').textContent = fmtR(_somaAtivos());
+
+  ['reservaBaseCalculo','reservaMesesDesejados'].forEach(id => {
+    document.getElementById(id).disabled = !isPlan;
+  });
+  document.getElementById('reservaValorInvestidoDisplay').disabled = !isPlan;
+  document.getElementById('reservaValorInvestidoDisplay').style.cursor = isPlan ? 'pointer' : 'default';
+  document.getElementById('reservaValorInvestidoDisplay').querySelector('span:last-child').style.display = isPlan ? '' : 'none';
+  document.getElementById('btnAtualizarReserva').style.display = isPlan ? '' : 'none';
+  document.getElementById('reservaClienteAviso').style.display = isPlan ? 'none' : '';
+
+  const valorInvestido = _somaAtivos();
+  const despesaBase   = computeDespesaBase(STATE.RESERVA.baseCalculo);
+  const valorAlvo     = despesaBase * STATE.RESERVA.mesesDesejados;
+  const mesesProtecao = despesaBase > 0 ? valorInvestido / despesaBase : 0;
+  _renderReservaKpisEProgresso({ ...STATE.RESERVA, valorInvestido }, despesaBase, valorAlvo, mesesProtecao);
+
+  renderReservaHistorico();
+  renderReservaChart();
+}
+
 function renderInvestScreen() {
   if (!STATE.DATA) return;
   buildInvestYearButtons();
@@ -5336,25 +5865,10 @@ function limparFiltrosReg() {
     const el = document.getElementById(id); if(el) el.value='';
   });
   STATE.regActiveYear = 'all'; STATE.regActiveMonth = 'all'; STATE.regActiveMonthTo = null;
+  STATE.regSelecionados.clear();
   buildRegYearButtons();
   populateRegSubcatAndCat();
   renderRegistros();
-}
-
-function exportarRegistrosCSV() {
-  const rows  = getRegistrosFiltrados().sort((a,b)=>b.date-a.date);
-  const lines = rows.map(t => [
-    t.date instanceof Date ? t.date.toLocaleDateString('pt-BR') : '',
-    `"${(t.desc||'').replace(/"/g,'""')}"`,
-    t.tipo,
-    `"${(t.cat||'').replace(/"/g,'""')}"`,
-    `"${(t.subcat||'').replace(/"/g,'""')}"`,
-    `"${(t.recurso||'').replace(/"/g,'""')}"`,
-    t.valor.toFixed(2).replace('.',',')
-  ].join(';'));
-  const csv  = ['Data;Descrição;Tipo;Categoria;Subcategoria;Origem;Valor', ...lines].join('\n');
-  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
-  _compartilharOuBaixarArquivo(blob, 'registros.csv', { title: 'Registros — The Ways' });
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -5363,8 +5877,7 @@ function exportarRegistrosCSV() {
 function exportarRegistrosXLSX() {
   if (!STATE.DATA || !STATE._exportMeta) { showToast('Nenhum arquivo carregado.', 'erro'); return; }
   try {
-    const relevantes = STATE.DATA.transactions.filter(tx => tx._edited || tx._addedManually);
-    if (!relevantes.length) { showToast('Nenhuma alteração para exportar.', 'info'); return; }
+    if (!STATE._hasUnsavedChanges) { showToast('Nenhuma alteração para exportar.', 'info'); return; }
 
     // Usa os metadados capturados no momento do parse — sem precisar do binário em memória.
     const { sheetName, headerRow, cols, budgetSheet, budgetSheetName } = STATE._exportMeta;
@@ -5413,6 +5926,35 @@ function exportarRegistrosXLSX() {
     if (budgetSheet && budgetSheetName) {
       XLSX.utils.book_append_sheet(wbOut, budgetSheet, budgetSheetName);
     }
+
+    // Grava a Reserva de Emergência sempre atualizada — é assim que a configuração
+    // e o histórico sobrevivem para a reunião do mês seguinte, ao reabrir este mesmo
+    // arquivo exportado.
+    const r = STATE.RESERVA;
+    const reservaAOA = [
+      ['Meses Desejados', r.mesesDesejados],
+      ['Base de Cálculo', r.baseCalculo],
+      ['Valor Investido', r.valorInvestido],
+      [],
+      ['Data','Valor Investido','Meses Desejados','Base de Cálculo','Despesa Base','Meses de Proteção','Valor Alvo'],
+      ...r.historico.map(h => [h.data, h.valorInvestido, h.mesesDesejados, h.baseCalculo, h.despesaBase, h.mesesProtecao, h.valorAlvo]),
+    ];
+    const reservaWs = XLSX.utils.aoa_to_sheet(reservaAOA);
+    XLSX.utils.book_append_sheet(wbOut, reservaWs, 'Reserva de Emergência');
+
+    // Ativos da Reserva: posição atual de cada ativo + histórico das versões
+    // superadas (guardado à parte, não aparece no dia a dia do dashboard).
+    const ativos = STATE.RESERVA.ativos || [];
+    const ativosAOA = [
+      ['Instituição','Ativo','Data','Valor'],
+      ...ativos.map(a => [a.instituicao, a.ativo, a.data, a.valor]),
+      [],
+      ['Histórico (superado)'],
+      ['Instituição','Ativo','Data','Valor'],
+      ...ativos.flatMap(a => (a.historico||[]).map(h => [h.instituicao||a.instituicao, h.ativo||a.ativo, h.data, h.valor])),
+    ];
+    const ativosWs = XLSX.utils.aoa_to_sheet(ativosAOA);
+    XLSX.utils.book_append_sheet(wbOut, ativosWs, 'Ativos Reserva');
 
     XLSX.writeFile(wbOut, (STATE.DATA.fileName||'dados').replace(/\.xlsx$/i,'') + '_editado.xlsx');
     STATE._hasUnsavedChanges = false;
@@ -6133,6 +6675,7 @@ function exportarDAT() {
     })),
     budget: STATE.BUDGET || null,
     tree: TREE,
+    reserva: STATE.RESERVA,
   };
   const corpoBytes = Array.from(new TextEncoder().encode(JSON.stringify(corpo)));
   const corpoXored = _xorBytes(corpoBytes, key);
@@ -6395,6 +6938,8 @@ function importarCorrecoes(file) {
 
 function _processarCorpoDAT(corpo) {
   if (corpo.tree) TREE = _normalizeTree(corpo.tree);
+  STATE.RESERVA = corpo.reserva || defaultReserva();
+  if (!STATE.RESERVA.ativos) STATE.RESERVA.ativos = [];
 
   const transactions = corpo.transactions.map((t, i) => {
     const date     = t.d ? (() => { const [y,m,d] = t.d.split('-'); return new Date(+y, +m-1, +d); })() : new Date();
@@ -7171,6 +7716,41 @@ document.addEventListener('keydown', e => {
      para que aparecer/sumir nunca desloque o menu -->
 <div id="unsavedIndicator" title="Gere um .dat (aba Registros) para não perder essas alterações">
   <span style="font-size:15px">⚠️</span> Você tem alterações não salvas — gere um backup (.dat) antes de sair
+</div>
+
+<!-- MODAL DE ATIVOS DA RESERVA -->
+<div class="edit-overlay" id="ativosOverlay">
+  <div class="edit-modal ativos-modal">
+    <h3>🏦 Ativos da Reserva</h3>
+
+    <div id="ativosLista" style="max-height:240px;overflow-y:auto;margin-bottom:16px;border:1px solid var(--border);border-radius:10px"></div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding-top:8px;border-top:1px dashed var(--border)">
+      <div>
+        <label style="display:block;font-size:10px;color:var(--mgray);font-weight:600;margin-bottom:5px;text-transform:uppercase">Data</label>
+        <input type="date" id="ativoData" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary)">
+      </div>
+      <div>
+        <label style="display:block;font-size:10px;color:var(--mgray);font-weight:600;margin-bottom:5px;text-transform:uppercase">Instituição</label>
+        <input type="text" id="ativoInstituicao" placeholder="Ex: Itaú" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);width:120px">
+      </div>
+      <div>
+        <label style="display:block;font-size:10px;color:var(--mgray);font-weight:600;margin-bottom:5px;text-transform:uppercase">Ativo</label>
+        <input type="text" id="ativoNome" placeholder="Ex: CDB" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);width:120px">
+      </div>
+      <div>
+        <label style="display:block;font-size:10px;color:var(--mgray);font-weight:600;margin-bottom:5px;text-transform:uppercase">Valor (R$)</label>
+        <input type="text" inputmode="numeric" id="ativoValor" placeholder="0,00" oninput="_aplicarMascaraAtivoValor()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-family:'DM Mono',monospace;width:120px">
+      </div>
+      <button class="reg-btn" id="btnSalvarAtivo" style="background:#0F6E56;color:#fff" onclick="salvarAtivo()">+ Adicionar</button>
+      <button class="reg-btn reg-btn-secondary" id="btnCancelarEdicaoAtivo" style="display:none" onclick="cancelarEdicaoAtivo()">Cancelar edição</button>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+      <div style="font-size:15px;font-weight:700">Total: <span id="ativosTotalTexto" style="color:#0F6E56">R$ 0,00</span></div>
+      <button class="edit-btn-save" onclick="fecharModalAtivos()">Concluir</button>
+    </div>
+  </div>
 </div>
 
 <!-- CONFIRM DIALOG -->
