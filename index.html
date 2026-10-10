@@ -23,7 +23,7 @@
   --teal:#0F6E56; --lteal:#D1FAE5;
   --orange:#C2410C; --lorange:#FFEDD5;
   --dgray:#374151; --mgray:#6B7280; --lgray:#F3F4F6;
-  --border:#E5E7EB; --red:#DC2626;
+  --border:#E5E7EB; --red:#DC2626; --lred:#FEE2E2;
   --radius:12px; --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
   --bg-page:#F0F2F5; --bg-card:#fff; --bg-header:#1A3C5E;
   --bg-filters:#fff; --bg-input:#fff; --bg-table-head:#F8F9FB;
@@ -36,7 +36,7 @@ html.dark {
   --teal:#10b981; --lteal:#064e3b;
   --orange:#f97316; --lorange:#431407;
   --dgray:#e2e8f0; --mgray:#94a3b8; --lgray:#1e293b;
-  --border:#334155; --red:#f87171;
+  --border:#334155; --red:#f87171; --lred:#450a0a;
   --bg-page:#0f172a; --bg-card:#1e293b; --bg-header:#0f172a;
   --bg-filters:#1e293b; --bg-input:#0f172a; --bg-table-head:#162032;
   --bg-table-hover:#1a2d45;
@@ -78,14 +78,25 @@ html{overflow-x:hidden;width:100%;overscroll-behavior-x:none;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text-primary);height:100vh;display:flex;flex-direction:column;overflow:hidden;max-width:100%;overscroll-behavior-x:none;transition:var(--theme-transition);}
 
 /* ── Header ── */
-.header{background:var(--bg-header);padding:8px 32px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2);min-height:96px;}
+.header{background:var(--bg-header);padding:8px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2);min-height:96px;}
 .brand-logo-img{height:80px;width:auto;display:block;object-fit:contain;}
 .header h1{color:#fff;font-size:17px;font-weight:600;}
-.header-right{display:flex;align-items:center;gap:16px;}
+.header-right{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:6px 12px;min-width:0;}
+.header-right .nav-tabs{flex-shrink:0;}
+.header-right .print-btn,.header-right .file-badge{white-space:nowrap;flex-shrink:0;}
+@media (max-width:1560px){.period-badge{display:none;}}
+@media (max-width:1560px){.nav-tab{padding:6px 9px;font-size:11.5px;}.regime-btn{padding:5px 11px;}.header-right{gap:8px;}.brand-logo-img{height:68px;}.header{min-height:84px;}}
 .file-badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:5px 14px;font-size:12px;color:rgba(255,255,255,.8);cursor:pointer;transition:background .15s;}
 .file-badge:hover{background:rgba(255,255,255,.2);}
 .period-badge{font-size:12px;color:rgba(255,255,255,.5);}
-.version-badge{font-size:10px;color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:2px 8px;white-space:nowrap;cursor:default;}
+.regime-toggle{display:inline-flex;flex-direction:column;align-items:stretch;gap:3px;flex-shrink:0;}
+.regime-label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.55);text-align:center;white-space:nowrap;}
+.regime-seg{display:flex;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:2px;}
+.regime-btn{flex:1 0 auto;white-space:nowrap;padding:5px 14px;font-size:12px;font-weight:600;font-family:inherit;border:none;border-radius:999px;cursor:pointer;color:rgba(255,255,255,.8);background:transparent;transition:all .15s;}
+.regime-btn.active{background:#fff;color:#1A3C5E;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.regime-btn:not(.active):hover{background:rgba(255,255,255,.15);}
+.period-badge{white-space:nowrap;flex-shrink:0;}
+.version-badge{font-size:10px;color:#fff;background:#dc2626;border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:2px 8px;white-space:nowrap;cursor:default;font-weight:700;}
 
 /* ── Upload screen ── */
 #uploadScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;overflow-y:auto;padding:40px;}
@@ -99,12 +110,29 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg-page);color:var(--text
 .drop-zone strong{color:var(--blue);}
 .btn-upload{display:inline-block;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s;}
 .btn-upload:hover{background:var(--blue);}
+.upload-actions .btn-upload{min-width:220px;margin:0;}
+.upload-actions{display:flex;flex-direction:column;gap:12px;align-items:center;}
+.btn-upload-sec{background:transparent;border:1.5px solid var(--navy);color:var(--navy);font-family:inherit;font-size:15px;font-weight:600;padding:12px 32px;border-radius:10px;cursor:pointer;min-width:220px;}
+.btn-upload-sec:hover{background:rgba(26,58,92,.07);}
+.upload-zero{margin-top:16px;font-size:12px;color:var(--mgray);display:flex;flex-direction:column;gap:2px;align-items:center;}
+.link-zero{background:none;border:none;padding:2px 4px;font-family:inherit;font-size:13px;font-weight:600;color:var(--blue);cursor:pointer;text-decoration:underline;}
 .format-hint{font-size:12px;color:var(--mgray);margin-top:20px;text-align:left;background:var(--lgray);border-radius:8px;padding:14px 16px;}
 .format-hint code{background:var(--lgray);padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-size:11px;}
+.error-msg.info{background:#EFF6FF;border-color:#BFDBFE;color:#1E3A5F;}
 .error-msg{background:#FEF2F2;border:1px solid #FECACA;color:#DC2626;border-radius:8px;padding:12px 16px;font-size:13px;margin-top:16px;display:none;}
 
 /* ── Sub-abas do Dashboard ── */
 .dash-tabs{display:flex;gap:4px;background:var(--lgray);border-radius:10px;padding:3px;margin-left:8px;}
+.parc-resumo{font-size:14px;line-height:1.5;color:var(--text-primary);margin-bottom:14px;}
+.parc-resumo strong{font-weight:700;}
+.parc-legenda{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:11px;color:var(--mgray);}
+.parc-legenda i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;}
+.parc-legenda i.linha{height:0;border-top:2px dashed #2563A8;width:16px;border-radius:0;vertical-align:3px;}
+.parc-nota{font-size:12px;color:var(--mgray);line-height:1.5;}
+.parc-alivio-item{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.parc-alivio-item:last-child{border-bottom:none;}
+.parc-vazio{font-size:13px;color:var(--mgray);padding:8px 0;}
+.parc-pct{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700;}
 .dash-tab{padding:5px 16px;border-radius:7px;font-size:12px;font-weight:600;font-family:inherit;border:none;cursor:pointer;transition:all .15s;color:var(--mgray);background:transparent;}
 .dash-tab:hover:not(.active){color:var(--navy);background:rgba(26,60,94,.08);}
 .dash-tab.active{background:var(--bg-card);color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.1);}
@@ -338,8 +366,8 @@ html.dark .diag-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
 html.dark .diag-bar-bg{background:var(--border);}
 
 /* ── Nav buttons ── */
-.nav-tabs{display:flex;gap:6px;background:rgba(255,255,255,.1);border-radius:10px;padding:3px;}
-.nav-tab{padding:6px 16px;border-radius:7px;font-size:12px;font-weight:600;font-family:inherit;border:none;cursor:pointer;transition:all .15s;color:rgba(255,255,255,.7);background:transparent;}
+.nav-tabs{display:flex;gap:4px;background:rgba(255,255,255,.1);border-radius:10px;padding:3px;min-width:0;}
+.nav-tab{padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;font-family:inherit;border:none;cursor:pointer;transition:all .15s;color:rgba(255,255,255,.7);background:transparent;}
 .nav-tab.active{background:var(--bg-card);color:var(--navy);}
 .nav-tab:hover:not(.active){color:#fff;background:rgba(255,255,255,.15);}
 
@@ -587,7 +615,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 
   /* Esconde elementos de interface */
   .header-right, #dashFilters, #budgetFilters,
-  .print-btn, .nav-tabs, .period-badge, .file-badge, .version-badge,
+  .print-btn, .nav-tabs, .period-badge, .regime-toggle, .file-badge, .version-badge,
   .btn-export, .modal-overlay, #uploadScreen,
   .card-collapse-btn, .modal-overlay { display:none !important; }
 
@@ -767,6 +795,8 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
     flex-shrink:0;
   }
   .period-badge{display:none;}
+  .regime-btn{padding:4px 10px;font-size:11px;}
+  .regime-label{display:none;}
   .version-badge{font-size:9px;padding:1px 6px;order:99;}
   .print-btn{display:none !important;}
   .file-badge{font-size:11px;padding:4px 10px;}
@@ -933,6 +963,26 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
   .month-filters{display:flex;gap:6px;flex-wrap:wrap;}
   .upload-hint-note{margin-top:10px;font-size:11px;color:var(--mgray);}
   .card-top-gap{margin-top:18px;}
+.metas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+.meta-card{display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;background:var(--bg-card);}
+.meta-card-neutro{border:1px solid var(--border);}
+.meta-card-aviso{font-size:11px;color:#B45309;font-style:italic;margin-top:3px;}
+.meta-ring{width:62px;height:62px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.meta-ring-inner{width:46px;height:46px;border-radius:50%;background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.meta-card-body{flex:1;min-width:0;}
+.meta-card-titulo{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.meta-card-linha{font-size:12px;color:var(--mgray);margin-bottom:2px;display:flex;align-items:center;gap:4px;}
+.meta-card-linha b{color:var(--text-primary);font-weight:600;}
+.meta-card-input{width:85px;border:none;border-bottom:1.5px solid var(--border);background:transparent;font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--text-primary);padding:1px 2px;}
+.meta-card-input:focus{outline:none;border-color:var(--navy);}
+.meta-card-input:disabled{border-bottom-style:dotted;}
+.meta-card-badge{font-size:10px;color:var(--mgray);margin-top:3px;}
+@media(max-width:900px){
+  .metas-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
+  .meta-card{padding:12px;gap:10px;}
+  .meta-ring{width:50px;height:50px;}
+  .meta-ring-inner{width:36px;height:36px;font-size:11px;}
+}
   .legend-mb{margin-bottom:12px;}
   .card-title-row{display:flex;align-items:center;justify-content:space-between;}
   .inc-legend-wrap{display:flex;flex-wrap:wrap;flex-direction:column;gap:0;margin-top:14px;}
@@ -965,6 +1015,10 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
   .diag-section-meta{margin-top:8px;font-size:12px;color:var(--mgray);}
   .empty-period{padding:16px 0;color:var(--mgray);font-size:13px;}
   .reg-subcat-cell{font-size:12px;color:var(--mgray);}
+  .reg-obs{font-size:11px;color:var(--mgray);margin-top:2px;white-space:normal;line-height:1.3;}
+  .reg-just{color:#b45309;}
+  .reg-banner{flex-basis:100%;background:#fffbeb;border:1px solid #fcd34d;color:#92400e;border-radius:8px;padding:8px 12px;font-size:12px;line-height:1.45;}
+  .reg-btn.modo-ativo{outline:3px solid rgba(26,60,94,.35);}
   .modal-subcat-cell{font-size:12px;color:var(--mgray);}
 
 /* ── Toast ── */
@@ -1003,9 +1057,9 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 /* ── Confirm dialog ── */
 #confirmOverlay{position:fixed;inset:0;background:rgba(15,25,40,.5);z-index:8000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .15s;}
 #confirmOverlay.open{opacity:1;pointer-events:all;}
-.confirm-box{background:var(--bg-card);border-radius:14px;padding:24px 26px;max-width:380px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,.18);transform:translateY(8px);transition:transform .15s;}
+.confirm-box{background:var(--bg-card);border-radius:14px;padding:24px 26px;max-width:520px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,.18);transform:translateY(8px);transition:transform .15s;}
 #confirmOverlay.open .confirm-box{transform:translateY(0);}
-.confirm-msg{font-size:14px;line-height:1.55;color:var(--text-primary);margin-bottom:20px;white-space:pre-line;}
+.confirm-msg{font-size:14px;line-height:1.55;color:var(--text-primary);margin-bottom:20px;white-space:pre-line;max-height:55vh;overflow-y:auto;}
 .confirm-actions{display:flex;gap:10px;justify-content:flex-end;}
 .confirm-btn-cancel{padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background .15s;}
 .confirm-btn-cancel:hover{background:var(--lgray);}
@@ -1074,6 +1128,13 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
       <button class="nav-tab"        id="tabReserva"      onclick="switchView('reserva')">🛡️ Reserva</button>
       <button class="nav-tab"        id="tabAdmin"        onclick="switchView('admin')" style="visibility:hidden;pointer-events:none">⚙️ Admin</button>
     </div>
+    <div class="regime-toggle" id="regimeToggle" style="display:none" title="Regime de apuração: define qual data (Competência ou Caixa) organiza os meses do dashboard">
+      <span class="regime-label">Regime</span>
+      <div class="regime-seg">
+        <button class="regime-btn active" id="regimeBtnCompetencia" onclick="setRegime('competencia')">Competência</button>
+        <button class="regime-btn" id="regimeBtnCaixa" onclick="setRegime('caixa')">Caixa</button>
+      </div>
+    </div>
     <span class="period-badge" id="periodBadge">—</span>
     <span class="version-badge" id="versionBadge" title="Versão do dashboard"></span>
     <button class="print-btn hidden" id="printBtn" onclick="triggerPrint()">🖨️ Imprimir Dashboard</button>
@@ -1088,23 +1149,10 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
   <div class="upload-card">
     <div class="upload-icon">📊</div>
     <h2>Dashboard Financeiro</h2>
-    <p id="uploadDesc">Arraste o arquivo aqui ou clique para selecionar.</p>
-    <div class="drop-zone" id="dropZone">
-      <p>📂 <strong id="dropZoneLabel">Arraste o arquivo aqui</strong><br>
-      <span style="font-size:12px;margin-top:6px;display:block">ou clique para selecionar</span></p>
-    </div>
-    <button class="btn-upload" id="btnUpload" onclick="document.getElementById('fileInput').click()">Selecionar arquivo</button>
-    <div class="format-hint" id="uploadHint">
-      <strong class="txt-xs-dark">📋 Colunas esperadas na planilha:</strong>
-      <div class="flex-col-gap">
-        <div><code>Gasto/Ganho</code> — <span class="txt-sm-muted">"Gasto" ou "Ganho"</span></div>
-        <div><code>Data</code> — <span class="txt-sm-muted">data da transação</span></div>
-        <div><code>Descrição</code> — <span class="txt-sm-muted">nome da transação</span></div>
-        <div><code>Categoria</code> — <span class="txt-sm-muted">ex: Habitação, Lazer…</span></div>
-        <div><code>Subcategoria</code> / <code>Tipo</code> — <span class="txt-sm-muted">tipo de lançamento</span></div>
-        <div><code>Valor</code> — <span class="txt-sm-muted">valor (negativo = gasto)</span></div>
-      </div>
-      <div class="upload-hint-note">Compatível com a aba <code>Planilha Plataforma</code>. Se houver uma aba <code>ORÇAMENTO</code>, o botão <strong>🎯 Orçamento</strong> será habilitado.</div>
+    <p id="uploadDesc">Abra o arquivo do seu planejador ou comece um novo.</p>
+    <div class="upload-actions">
+      <button class="btn-upload" id="btnUpload" onclick="document.getElementById('fileInput').click()">Selecionar arquivo</button>
+      <button type="button" class="btn-upload-sec" id="btnZero" onclick="iniciarDoZero()">Começar do zero</button>
     </div>
     <div class="error-msg" id="errorMsg"></div>
   </div>
@@ -1113,14 +1161,15 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 <!-- DASHBOARD SCREEN -->
 <div id="dashboardScreen">
   <div class="filters" id="dashFilters">
-    <span class="filter-label">Período</span>
+    <span class="filter-label" id="periodLabelWrap">Período</span>
     <div id="monthFilters" class="month-filters"></div>
-    <div class="filter-sep"></div>
+    <div class="filter-sep" id="periodSep"></div>
     <!-- Sub-abas internas do dashboard -->
     <div class="dash-tabs" id="dashTabs">
       <button class="dash-tab active" id="dtabGeral"    onclick="switchDashTab('geral',this)">📊 Visão Geral</button>
       <button class="dash-tab"        id="dtabReceitas" onclick="switchDashTab('receitas',this)">💵 Receitas</button>
       <button class="dash-tab"        id="dtabDespesas" onclick="switchDashTab('despesas',this)">💸 Despesas</button>
+      <button class="dash-tab"        id="dtabParcelas" onclick="switchDashTab('parcelas',this)">💳 Parcelas</button>
     </div>
 
   </div>
@@ -1251,6 +1300,43 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
   </div>
 
   <!-- ABA: DESPESAS -->
+  <!-- ABA: PARCELAS NO CARTÃO (projeção calculada na hora, nada é gravado) -->
+  <div class="main dash-panel" id="panelParcelas" style="display:none">
+    <div class="print-header">
+      <strong>Parcelas no cartão</strong>
+    </div>
+    <div class="kpi-grid" id="parcKpis"></div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Parcelas já comprometidas, mês a mês</div>
+      <div id="parcResumo" class="parc-resumo"></div>
+      <div class="chart-wrap" style="height:260px"><canvas id="parcChart"></canvas></div>
+      <div class="parc-legenda">
+        <span><i style="background:#0F6E56"></i> até 30% da renda</span>
+        <span><i style="background:#d97706"></i> de 30% a 50%</span>
+        <span><i style="background:#dc2626"></i> acima de 50%</span>
+        <span><i style="background:rgba(37,99,168,.35);border:1px solid #2563A8"></i> barra azul = renda média mensal</span>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Quando alivia</div>
+        <div id="parcAlivio"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Como ler esta tela</div>
+        <div class="parc-nota">
+          As parcelas futuras são <strong>estimadas</strong> a partir da numeração no fim da Descrição (ex.: "02/03" = 2ª de 3 parcelas). Só entram as compras que aparecem no <strong>último mês processado</strong>; cada uma é projetada com o valor da parcela, nos meses seguintes. Esta aba não usa o filtro de período nem o regime.<br><br>
+          O percentual compara cada mês com a <strong>renda média mensal dos últimos 12 meses</strong> até o último mês processado (ou os meses que existirem), contando as receitas pelo mês em que entraram, sem resgates e rendimentos de investimentos.<br><br>
+          Só valem lançamentos de fatura de cartão (arquivo de origem com "cartão" no nome); Pix e transferências não entram. Compras sem numeração na Descrição, ou que não aparecem no último mês, também ficam de fora.
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-title">Compras parceladas em aberto</div>
+      <div id="parcTabela" style="overflow-x:auto"></div>
+    </div>
+  </div>
+
   <div class="main dash-panel" id="panelDespesas" style="display:none">
     <div class="print-header">
       <strong id="printDespesasTitle">Despesas</strong>
@@ -1313,12 +1399,28 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 <!-- STATE.BUDGET SCREEN -->
 <div id="budgetScreen">
   <div class="filters" id="budgetFilters">
-    <span class="filter-label">Período</span>
-    <div id="budgetMonthFilters" class="month-filters"></div>
+    <div class="reg-filter-group">
+      <div class="reg-filter-label">Base de cálculo</div>
+      <select class="reg-select" id="metasBaseCalculo" onchange="onMetasConfigChange()">
+        <option value="ultimo_mes">Último mês fechado</option>
+        <option value="trimestre">Últimos 3 meses fechados</option>
+        <option value="semestre">Últimos 6 meses fechados</option>
+        <option value="ultimos_12_meses">Últimos 12 meses fechados</option>
+        <option value="ano_atual">Ano atual (até o último mês fechado)</option>
+        <option value="todo_periodo">Todo o período</option>
+      </select>
+    </div>
+    <div class="reg-filter-group">
+      <div class="reg-filter-label">Ordenar por</div>
+      <select class="reg-select" id="metasOrdenarPor" onchange="onMetasConfigChange()">
+        <option value="meta">Meta (maior → menor)</option>
+        <option value="realizado">Realizado (maior → menor)</option>
+      </select>
+    </div>
   </div>
   <div class="budget-main">
     <div class="print-header">
-      <strong id="printBudgetTitle">Orçamento vs Realizado</strong>
+      <strong id="printBudgetTitle">Metas vs Realizado</strong>
       <span id="printBudgetPeriod"></span>
     </div>
     <div class="budget-kpi-grid" id="budgetKpis"></div>
@@ -1469,20 +1571,26 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
     </div>
     <div class="reg-filter-group">
       <div class="reg-filter-label">Valor mín.</div>
-      <input class="reg-input reg-input-sm" id="regValMin" type="number" placeholder="0,00" oninput="renderRegistrosDebounced()">
+      <input class="reg-input reg-input-sm" id="regValMin" type="text" inputmode="numeric" placeholder="0,00" autocomplete="off" oninput="_aplicarMascaraMoeda(this);renderRegistrosDebounced()">
     </div>
     <div class="reg-filter-group">
       <div class="reg-filter-label">Valor máx.</div>
-      <input class="reg-input reg-input-sm" id="regValMax" type="number" placeholder="∞" oninput="renderRegistrosDebounced()">
+      <input class="reg-input reg-input-sm" id="regValMax" type="text" inputmode="numeric" placeholder="∞" autocomplete="off" oninput="_aplicarMascaraMoeda(this);renderRegistrosDebounced()">
     </div>
     <div class="reg-filter-group" style="justify-content:flex-end">
       <div class="reg-filter-label">&nbsp;</div>
       <div style="display:flex;gap:6px">
+        <button class="reg-btn" id="btnPendentes" style="background:#d97706;color:#fff;display:none" onclick="alternarModoPendentes()">⚠ Pendentes</button>
+        <button class="reg-btn" id="btnTransf" style="background:#475569;color:#fff;display:none" onclick="alternarModoTransf()">↔ Transferências</button>
         <button class="reg-btn" id="btnNovoRegistro" style="background:#0F6E56;color:#fff;display:none" onclick="abrirModalNovoRegistro()">➕ Novo Registro</button>
+        <button class="reg-btn reg-btn-secondary" id="btnInstituicoes" onclick="abrirModalInstituicoes()">🏦 Instituições</button>
+        <button class="reg-btn" id="btnReclassificarSelecionados" style="background:#7c3aed;color:#fff;display:none" onclick="abrirModalReclassificar()" disabled>✏️ Reclassificar selecionados</button>
         <button class="reg-btn" id="btnExcluirSelecionados" style="background:#dc2626;color:#fff;display:none" onclick="excluirRegistrosSelecionados()" disabled>🗑️ Excluir selecionados</button>
         <button class="reg-btn reg-btn-secondary" onclick="limparFiltrosReg()">✕ Limpar filtros</button>
         <button class="reg-btn" id="btnExportRegXLSX" style="background:var(--navy);color:#fff" onclick="exportarRegistrosXLSX()">⬇ Exportar XLSX</button>
         <button class="reg-btn" id="btnGerarDat" style="background:#7c3aed;color:#fff;display:none" onclick="exportarDAT()">⬇ Gerar .dat (cliente)</button>
+        <button class="reg-btn reg-btn-secondary" id="btnChaves" style="display:none" onclick="abrirModalChaves()">🔑 Chaves</button>
+        <button class="reg-btn" id="btnSalvarProgresso" style="background:#0F6E56;color:#fff;display:none" onclick="salvarProgresso()">💾 Salvar meu progresso</button>
         <button class="reg-btn" id="btnExportCorrecoes" style="background:#059669;color:#fff;display:none" onclick="exportarCorrecoes()">📤 Enviar Correções (.dat)</button>
       </div>
     </div>
@@ -1573,7 +1681,7 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
   <div class="edit-modal">
     <h3 id="editModalTitle">✏️ Editar Registro</h3>
     <div id="editModalHint" style="display:none;background:#F3F4F6;border-radius:8px;padding:8px 10px;font-size:11px;color:var(--mgray);margin-bottom:10px;line-height:1.4">
-      ℹ️ Neste modo você pode ajustar apenas <strong>Receita/Despesa</strong> e <strong>Tipo/Categoria</strong>. Data, descrição e valor ficam bloqueados — seu planejador financeiro é quem controla esses campos.
+      ℹ️ Neste modo você pode ajustar apenas o <strong>Tipo</strong> (a Categoria acompanha) e a <strong>Observação</strong>. Os demais campos ficam bloqueados — seu planejador financeiro é quem controla.
     </div>
     <div class="edit-field">
       <label>Data</label>
@@ -1603,11 +1711,16 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
     </div>
     <div class="edit-field">
       <label>Valor (R$)</label>
-      <input type="number" id="editValor" min="0" step="0.01" placeholder="0,00" style="font-family:'DM Mono',monospace">
+      <input type="text" inputmode="numeric" id="editValor" placeholder="0,00" oninput="_aplicarMascaraMoeda(this)" autocomplete="off" style="font-family:'DM Mono',monospace">
+    </div>
+    <div class="edit-field">
+      <label>Observação <span style="font-size:10px;color:var(--mgray);font-weight:400;text-transform:none">(opcional)</span></label>
+      <input type="text" id="editObs" maxlength="300" placeholder="Anotação sobre este lançamento">
     </div>
     <div class="edit-field" id="editRecursoField" style="display:none">
-      <label>Origem <span style="font-size:10px;color:var(--mgray);font-weight:400;text-transform:none">(opcional)</span></label>
-      <input type="text" id="editRecurso" placeholder="Ex: Itaú CC, Nubank Cartão…">
+      <label>Instituição <span style="font-size:10px;color:var(--mgray);font-weight:400;text-transform:none">(opcional)</span></label>
+      <select id="editInstituicao"></select>
+      <div id="editInstHint" style="font-size:11px;color:var(--mgray);margin-top:4px;display:none">Cadastre suas contas e cartões em “🏦 Instituições”, na tela de Registros.</div>
     </div>
     <div class="edit-actions">
       <button class="edit-btn-cancel" onclick="closeEditModal()">Cancelar</button>
@@ -1714,8 +1827,8 @@ html.dark .reg-table-wrap { background:var(--bg-page); }
 // ══════════════════════════════════════════════════════════════════════════════
 // Atualize estes dois valores sempre que publicar uma nova versão do arquivo.
 // Formato sugerido: "X.Y" e "DD/MM/AAAA".
-const APP_VERSION      = '3.4';
-const APP_VERSION_DATE = '23/09/2026';
+const APP_VERSION      = '3.9';
+const APP_VERSION_DATE = '10/10/2026';
 // ⚠️ Ao mudar os valores acima, atualize também CACHE_NAME em service-worker.js
 // (linha com "dashboard-financeiro-vX.Y") para o mesmo número de versão.
 
@@ -1755,24 +1868,24 @@ const APP_VERSION_DATE = '23/09/2026';
 let TREE = {
   "GANHOS": {
     "RECEITAS FIXAS": ["ALUGUÉIS","APOSENTADORIA","PENSÕES (RECEITA)","PRÓ-LABORE","SALÁRIO LÍQUIDO"],
-    "RECEITAS VARIÁVEIS": ["13o. SALÁRIO LÍQUIDO","AJUDA DE CUSTOS","AJUSTE DE RECEITA","BÔNUS E EXTRAS","CASHBACK","DIREITOS AUTORAIS","DISTRIBUIÇÃO DE LUCRO","EMPRÉSTIMOS","FÉRIAS","NOTAS FISCAIS EMITIDAS","OUTROS (RECEITAS)","REEMBOLSOS","RESTITUIÇÃO DE IMPOSTO","SEGUROS"],
-    "INVESTIMENTOS": ["APLICAÇÕES/RESGATES FEITOS DENTRO DO MÊS","DIVIDENDOS","JUROS","PROVENTOS","RENDIMENTOS"]
+    "RECEITAS VARIÁVEIS": ["13o. SALÁRIO LÍQUIDO","AJUDA DE CUSTOS","AJUSTE DE RECEITA","BÔNUS E EXTRAS","CASHBACK","DIREITOS AUTORAIS","DISTRIBUIÇÃO DE LUCRO","EMPRÉSTIMOS","FÉRIAS","OUTROS (RECEITAS)","PRESTAÇÃO DE SERVIÇOS","REEMBOLSOS","RESTITUIÇÃO DE IMPOSTO","SEGUROS - INDENIZAÇÃO","VENDA DE PRODUTOS"],
+    "RECEITAS INVESTIMENTOS": ["RESGATES INVESTIMENTOS","BONIFICAÇÕES","DIVIDENDOS","JUROS","PROVENTOS","RENDIMENTOS"]
   },
   "GASTOS": {
-    "DESPESAS PESSOAIS": ["ACADEMIA","CABELEIREIRO","CARTÕES DE CRÉDITO (ANUIDADES)","COSMÉTICOS","ESPORTES","HIGIENE PESSOAL (UNHA, DEPILAÇÃO ETC.)","MESADAS","OUTROS (DESPESAS PESSOAIS)","VESTUÁRIO"],
-    "DESPESAS TEMPORÁRIAS / VARIÁVEIS": ["ARTIGOS DE RESIDÊNCIA","COMPRAS ONLINE","CORREIO","CURSO DE IDIOMAS","DEDETIZAÇÃO","ELETRÔNICOS","FUNDO PARA VIAGENS / GASTOS DE FÉRIAS","IMPOSTOS","MANUTENÇÃO E REPAROS","MANUTENÇÃO VEÍCULO","MÉDICOS E TERAPEUTAS ESPORÁDICOS","NÃO CATEGORIZADA","PRESENTES DO MÊS","PRESTAÇÕES","UTILIDADES DOMÉSTICAS E DECORAÇÃO"],
-    "EDUCAÇÃO": ["CURSOS","ENSINO À DISTÂNCIA","ESCOLA / FACULDADE","MATERIAL ESCOLAR","OUTROS (EDUCAÇÃO)","UNIFORMES"],
-    "EMPRESA - DESPESAS FIXAS": ["COFINS","CSLL","DESPESAS GERAIS MÉDIAS","INSS","IR","ISS","MENSALIDADE CONTADOR","PIS"],
-    "HABITAÇÃO": ["ALIMENTAÇÃO","ALUGUEL / PRESTAÇÃO","CONDOMÍNIO","CONTA DE ÁGUA","CONTA DE ENERGIA","CONTA DE GÁS","EMPREGADOS","FEIRA","INTERNET","IPTU + TAXAS MUNICIPAIS","LAVANDERIA","OUTROS (HABITAÇÃO)","PADARIA","STREAMING","SUPERMERCADO","TELEFONE FIXO","TELEFONES CELULARES","TV POR ASSINATURA"],
-    "INVESTIMENTOS": ["INVESTIMENTO","PREVIDÊNCIA"],
-    "LAZER": ["GAMES","HOSPEDAGENS","LANCHONETES, CAFÉS, BARES E BOATES","LIVRARIA, JORNAIS E REVISTAS","MIDIAS E ACESSÓRIOS","OUTROS (LAZER)","PASSAGENS","PASSEIOS","RESTAURANTES"],
-    "OUTROS": ["ADVOGADO","APLICATIVOS","APOSTAS/LOTERIA","CARNÊ LEÃO","CARTÓRIO/CORREIOS","DOAÇÕES E DÍZIMOS","ENCARGOS","EXTRAS DIÁRIOS","GORJETAS / CAIXINHAS","JUROS/IOF - CHEQUE ESPECIAL/CARTÃO DE CRÉDITO","OUTRAS DESPESAS","PAPELARIA","PENSÕES","SEGUROS","SERVIÇOS PESSOAIS","TARIFAS BANCÁRIAS E TAXAS"],
-    "PET": ["ACESSÓRIOS","ALIMENTAÇÃO","BANHO E TOSA","OUTROS (PET)","VESTUÁRIO","VETERINÁRIO"],
-    "SAÚDE": ["ASSISTÊNCIA À SAÚDE","DENTISTA","MEDICAMENTOS","MÉDICOS E TERAPEUTAS","OUTROS (SAÚDE)","PLANO DE SAÚDE"],
-    "TRANSPORTE": ["ALUGUEL","COMBUSTÍVEL","ESTACIONAMENTOS","IPVA + SEGURO OBRIGATÓRIO","LAVAGENS","MECÂNICO","METRÔ","MULTAS","ÔNIBUS","PEDÁGIO","OUTROS (TRANSPORTE)","PRESTAÇÃO","SEGURO","TÁXI/UBER","TREM"]
+    "DESPESAS PESSOAIS": ["ACADEMIA","ALIMENTAÇÃO FORA DO LAR","CABELEIREIRO","CARTÕES DE CRÉDITO (ANUIDADES)","COSMÉTICOS","CUIDADOS PESSOAIS","ESPORTES","MESADAS","OUTROS (DESPESAS PESSOAIS)","SERVIÇOS PESSOAIS","VESTUÁRIO"],
+    "DESPESAS TEMPORÁRIAS / VARIÁVEIS": ["ARTIGOS DE RESIDÊNCIA","COMPRAS ONLINE","CORREIO","DECORAÇÃO","DEDETIZAÇÃO","ELETRÔNICOS","IMPOSTOS","MANUTENÇÃO E REPAROS IMÓVEL","MANUTENÇÃO VEÍCULO","NÃO CATEGORIZADA","PRESENTES","PRESTAÇÃO CONSÓRCIOS","PRESTAÇÃO EMPRÉSTIMOS / OUTROS","UTILIDADES DOMÉSTICAS","VIAGENS / GASTOS DE FÉRIAS"],
+    "EDUCAÇÃO": ["CURSO DE IDIOMAS","CURSOS","ENSINO À DISTÂNCIA","ESCOLA / FACULDADE","MATERIAL ESCOLAR","OUTROS (EDUCAÇÃO)","UNIFORMES"],
+    "EMPRESA - DESPESAS FIXAS": ["ALUGUEL PJ","ASSOCIAÇÕES","CONTA DE ÁGUA PJ","CONTA DE ENERGIA PJ","DIVULGAÇÃO PJ","FUNCIONÁRIOS","IMPOSTOS ESTADUAIS","IMPOSTOS FEDERAIS","IMPOSTOS MUNICIPAIS","LIMPEZA E CONSERVAÇÃO","MANUTENÇÕES PJ","MATERIAIS DE ESCRITÓRIO","MATERIAIS PROFISSIONAIS","MENSALIDADE CONTADOR","OUTROS PJ","PRESTADORES DE SERVIÇOS","SOFTWARE"],
+    "HABITAÇÃO": ["ALUGUEL","CONDOMÍNIO","CONTA DE ÁGUA","CONTA DE ENERGIA","CONTA DE GÁS","EMPREGADOS","FEIRA","INTERNET","IPTU + TAXAS MUNICIPAIS","LAVANDERIA","OUTROS (HABITAÇÃO)","PADARIA","PRESTAÇÃO IMÓVEL","STREAMING","SUPERMERCADO","TELEFONE FIXO","TELEFONES CELULARES","TV POR ASSINATURA"],
+    "INVESTIMENTOS": ["INVESTIMENTO","OUTROS INVESTIMENTOS","PREVIDÊNCIA"],
+    "LAZER": ["CLUBES","GAMES","HOSPEDAGENS","LANCHONETES, CAFÉS E BARES","LIVRARIA, JORNAIS E REVISTAS","OUTROS (LAZER)","PASSAGENS","PASSEIOS","RESTAURANTES"],
+    "OUTROS": ["ADVOGADO","APLICATIVOS","APOSTAS/LOTERIA","ARMAZENAMENTO EM NUVEM","DOAÇÕES E DÍZIMOS","EXTRAS DIÁRIOS","GORJETAS / CAIXINHAS","IRPF / CARNÊ LEÃO","JUROS / IOF","MULTAS POR ATRASO","OUTRAS DESPESAS","PAPELARIA","PENSÕES","SEGUROS","TARIFAS BANCÁRIAS","TAXAS E TARIFAS DIVERSAS"],
+    "PET": ["ACESSÓRIOS","ALIMENTAÇÃO PET","AQUISIÇÃO PET","BANHO E TOSA","OUTROS (PET)","VESTUÁRIO PET","VETERINÁRIO"],
+    "SAÚDE": ["ASSISTÊNCIA À SAÚDE","DENTISTA","MEDICAMENTOS","MÉDICOS","OUTROS (SAÚDE)","PLANO DE SAÚDE","TERAPEUTAS"],
+    "TRANSPORTE": ["ALUGUEL VEÍCULO","COMBUSTÍVEL","ESTACIONAMENTOS","IPVA + SEGURO OBRIGATÓRIO","LAVAGENS","MECÂNICO","METRÔ","MULTAS","ÔNIBUS","OUTROS (TRANSPORTE)","PEÇAS / EQUIPAMENTOS","PEDÁGIO","PRESTAÇÃO VEÍCULO","SEGURO VEÍCULO","TÁXI/UBER","TREM"]
   },
   "OUTRO": {
-    "TRANSFERÊNCIAS": ["NÃO CATEGORIZADA - TRANSFERÊNCIAS","PAGAMENTO DE CARTÃO DE CRÉDITO","TRANSFERÊNCIAS MESMA TITULARIDADE"]
+    "TRANSFERÊNCIAS": ["PAGAMENTO FATURA CARTÃO DE CRÉDITO","TRANSFERÊNCIAS ENTRE CONTAS FAMÍLIA","TRANSFERÊNCIAS MESMA TITULARIDADE"]
   }
 };
 
@@ -1783,6 +1896,25 @@ let TREE = {
 // já existente nos dados (ex.: "Medicamentos" vindo da planilha x "MEDICAMENTOS"
 // vindo de uma edição) — normalizeName() está definida mais abaixo, mas funções
 // declaradas com `function` são hoisted, então já pode ser chamada aqui.
+//
+// Antes de normalizar, guarda a grafia ORIGINAL (caixa alta da Árvore oficial) de cada
+// categoria/tipo: o arquivo exportado (aba Classificação) precisa trazer os nomes
+// exatamente como estão na Árvore (ex.: "13o. SALÁRIO LÍQUIDO"), não em "Sentence case".
+const _NOMES_ORIGINAIS = { cat: {}, tipo: {} };
+(function _guardarNomesOriginais() {
+  for (const categorias of Object.values(TREE)) {
+    for (const [cat, tipos] of Object.entries(categorias)) {
+      _NOMES_ORIGINAIS.cat[normalizeName(cat)] = cat;
+      tipos.forEach(t => { _NOMES_ORIGINAIS.tipo[normalizeName(t)] = t; });
+    }
+  }
+})();
+// Devolve o nome na grafia da Árvore. Para nomes criados depois (Admin → Gestão da
+// Árvore) que não estejam no mapa, usa caixa alta como padrão da Árvore oficial.
+function nomeArvore(kind, nomeNormalizado) {
+  const s = String(nomeNormalizado || '');
+  return _NOMES_ORIGINAIS[kind][s] || s.toLocaleUpperCase('pt-BR');
+}
 TREE = _normalizeTree(TREE);
 
 function _normalizeTree(tree) {
@@ -1799,13 +1931,13 @@ function _normalizeTree(tree) {
 // ── Nomes de categorias usados em lógica — altere aqui se renomear na planilha ──
 const CATS = {
   REC_INVEST:  'Receitas Investimentos',
-  DESP_INVEST: 'Despesas Investimentos',
+  DESP_INVEST: 'Investimentos',            // árvore nova: sem o prefixo "Despesas"
   REC_FIXAS:   'Receitas Fixas',
   REC_VAR:     'Receitas Variáveis',
   // versões lowercase para comparações case-insensitive
   REC_INVEST_LOW:      'receitas investimentos',
-  DESP_INVEST_LOW:     'despesas investimentos',
-  DESP_INVEST_PARTIAL: 'despesas invest',  // substring usada em .includes() — fonte única da verdade
+  DESP_INVEST_LOW:     'investimentos',
+  DESP_INVEST_PARTIAL: 'investimentos',  // substring usada em .includes() — fonte única da verdade
 };
 
 
@@ -1885,6 +2017,21 @@ const STATE = {
 
   // Reserva de Emergência
   RESERVA: { mesesDesejados: 6, baseCalculo: 'ultimos_6_meses', valorInvestido: 0, historico: [], ativos: [] },
+
+  // Metas de Orçamento (categoria → meta sugerida ou travada manualmente)
+  METAS: { baseCalculo: 'ultimo_mes', ordenarPor: 'meta', valores: {} },
+
+  // Regime de apuração: 'competencia' (padrão ao abrir) ou 'caixa' — define qual das
+  // duas datas do arquivo organiza os meses em todo o dashboard.
+  REGIME: 'competencia',
+
+  // Registros com STATUS "Analisar/Classificar": ficam FORA de todos os números e telas
+  // até o cliente reclassificá-los (STATE.DATA.transactions só tem os "Ok - Confere").
+  PENDENTES: [],
+  EXCLUIDOS: [],          // registros excluídos: {t, dh: Date, por: 'cliente'|'planejador'}
+  regModoPendentes: false,
+  regModoTransf: false,
+  _dashStale: false, // true quando o regime mudou com outra tela aberta — redesenha ao voltar
 
   // Admin
   _adminUnlocked: false,
@@ -2023,6 +2170,7 @@ function buildDashYearButtons() {
 
 // Instâncias de gráficos
 let barChart, lineChart, stackedBar, donutReceitas, donutDespesas;
+let parcChart; // aba Parcelas
 let barChartR, donutReceitasR; // aba receitas
 let barChartD, donutDespesasD; // aba despesas
 
@@ -2153,9 +2301,10 @@ function sortTransactions(rows, col, dir) {
   });
 }
 
-function showError(msg){
+function showError(msg, info){
   const el=document.getElementById('errorMsg');
   el.textContent=msg; el.style.display='block';
+  el.classList.toggle('info', !!info); // info = instrução neutra, não erro
 }
 function hideError(){ document.getElementById('errorMsg').style.display='none'; }
 
@@ -2185,6 +2334,21 @@ function showConfirm(msg, onConfirm) {
 function _closeConfirm() {
   document.getElementById('confirmOverlay').classList.remove('open');
   STATE._confirmCallback = null;
+  // Restaura os dois botões se o diálogo foi aberto como aviso (só "Entendi")
+  if (STATE._avisoRestore) {
+    document.getElementById('confirmOkBtn').textContent = STATE._avisoRestore.okTxt;
+    document.getElementById('confirmCancelBtn').style.display = STATE._avisoRestore.cancelDisplay;
+    STATE._avisoRestore = null;
+  }
+}
+// Aviso informativo: mesma caixa de confirmação, mas só com o botão "Entendi".
+function showAviso(msg, okLabel) {
+  const ok = document.getElementById('confirmOkBtn');
+  const cancel = document.getElementById('confirmCancelBtn');
+  STATE._avisoRestore = { okTxt: ok.textContent, cancelDisplay: cancel.style.display };
+  ok.textContent = okLabel || 'Entendi';
+  cancel.style.display = 'none';
+  showConfirm(msg, null);
 }
 // Cabeia os botões uma única vez ao carregar
 document.addEventListener('DOMContentLoaded', () => {
@@ -2303,7 +2467,7 @@ function detectColumns(keys) {
   };
 
   return {
-    colTipo  : findCol(['Gasto/Ganho'], ['gasto/ganho','tipo mov','movimentacao']),
+    colTipo  : findCol(['Gasto/Ganho', 'Origem'], ['gasto/ganho','tipo mov','movimentacao']),
     colData  : findCol(['Data','data'], ['date']),
     colDesc  : findCol(['Descrição','Descricao','Descricão'], ['desc']),
     colCat   : findCol(['Categoria'], ['category']),
@@ -2331,6 +2495,272 @@ function hideLoading() {
   if (el) el.classList.remove('active');
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// FORMATO NOVO — aba "Classificação" (12 colunas fixas)
+// ══════════════════════════════════════════════════════════════════════════════
+const CLASSIF_COLUNAS = ['Data Competência','Data Caixa','Arquivo de Origem','Descrição','Observação',
+  'Valor','Origem','Origem Base','Categoria','TIPO SUGERIDO','STATUS','Justificativa'];
+const STATUS_OK      = 'Ok - Confere';
+const STATUS_PEND    = 'Analisar/Classificar';
+const ARQUIVO_MANUAL = 'Lançamento manual';
+
+function _semAcento(s) {
+  return String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+function detectClassifSheet(wb) {
+  return wb.SheetNames.find(n => _semAcento(n) === 'classificacao');
+}
+// Arredonda para o dia mais próximo — absorve deslocamentos de fuso na leitura do Excel.
+function _dataSoDia(d) {
+  const r = new Date(d.getTime() + 12 * 3600 * 1000);
+  return new Date(r.getFullYear(), r.getMonth(), r.getDate());
+}
+// Data válida (Date, serial do Excel, dd/mm/aaaa ou aaaa-mm-dd); senão null.
+function _parseDataCelula(v) {
+  if (v == null || v === '') return null;
+  let d = null;
+  if (v instanceof Date) {
+    if (isNaN(v.getTime())) return null;
+    d = _dataSoDia(v);
+  } else if (typeof v === 'number') {
+    const p = XLSX.SSF.parse_date_code(v);
+    if (!p) return null;
+    d = new Date(p.y, p.m - 1, p.d);
+  } else if (typeof v === 'string') {
+    const t = v.trim();
+    let m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) {
+      d = new Date(+m[3], +m[2] - 1, +m[1]);
+      if (d.getMonth() !== +m[2] - 1 || d.getDate() !== +m[1]) return null;
+    } else if ((m = t.match(/^(\d{4})-(\d{2})-(\d{2})/))) {
+      d = new Date(+m[1], +m[2] - 1, +m[3]);
+      if (d.getMonth() !== +m[2] - 1 || d.getDate() !== +m[3]) return null;
+    }
+  }
+  if (!d || isNaN(d.getTime())) return null;
+  const y = d.getFullYear();
+  return (y >= 1990 && y <= 2100) ? d : null;
+}
+function _parseValorCelula(v) {
+  if (typeof v === 'number') return isFinite(v) ? v : NaN;
+  if (typeof v === 'string') {
+    let t = v.replace(/R\$|\s/g, '');
+    if (!t) return NaN;
+    if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');
+    const n = Number(t);
+    return isFinite(n) ? n : NaN;
+  }
+  return NaN;
+}
+// Índice Tipo (normalizado) → { origem interna, categoria } a partir do TREE atual.
+function _indiceTipos() {
+  const map = new Map();
+  const nomeOrigem  = { GANHOS: 'RECEITA', GASTOS: 'DESPESA', OUTRO: 'OUTRO' };
+  const tipoInterno = { GANHOS: 'Ganho',   GASTOS: 'Gasto',   OUTRO: 'Outro' };
+  for (const [ok, cats] of Object.entries(TREE)) {
+    for (const [cat, tipos] of Object.entries(cats)) {
+      tipos.forEach(t => map.set(t, { tipo: tipoInterno[ok] || 'Outro', origemNome: nomeOrigem[ok] || ok, cat }));
+    }
+  }
+  return map;
+}
+// Aplica o regime ativo: define t.date / monthKey / month a partir da Data Competência
+// ou da Data Caixa. Tudo que o dashboard agrupa por mês passa a usar essa data.
+function _aplicarRegime(t) {
+  const d = (STATE.REGIME === 'caixa' ? t.dataCaixa : t.dataCompetencia) || t.dataCompetencia || t.dataCaixa || t.date;
+  if (!(d instanceof Date) || isNaN(d.getTime())) return;
+  t.date     = d;
+  t.monthKey = `${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  t.month    = new Date(d.getFullYear(), d.getMonth(), 1)
+    .toLocaleDateString('pt-BR', {month:'short', year:'numeric'}).replace('. ', '/');
+}
+
+/**
+ * Lê e valida a aba "Classificação". Qualquer erro => nada é carregado.
+ * Retorna { erroFatal } | { erros: Map(msg → linhas) } | { transactions, pendentes, sheetName }
+ */
+function parseClassificacao(wb) {
+  const sheetName = detectClassifSheet(wb);
+  if (!sheetName) {
+    return { erroFatal: 'Este arquivo não tem a aba "Classificação". O dashboard lê somente o formato novo, com a aba "Classificação".' };
+  }
+  const ws = wb.Sheets[sheetName];
+  const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+  const linhaBase = ws['!ref'] ? XLSX.utils.decode_range(ws['!ref']).s.r : 0;
+
+  let hIdx = -1;
+  for (let i = 0; i < Math.min(rawRows.length, 15); i++) {
+    const keys = (rawRows[i] || []).map(_semAcento);
+    if (keys.includes('data competencia') && keys.includes('tipo sugerido')) { hIdx = i; break; }
+  }
+  if (hIdx < 0) {
+    return { erroFatal: 'Não encontrei o cabeçalho da aba "Classificação" (colunas "Data Competência" e "TIPO SUGERIDO").' };
+  }
+  const headerKeys = rawRows[hIdx].map(_semAcento);
+  const col = {}, faltando = [];
+  CLASSIF_COLUNAS.forEach(nome => {
+    const i = headerKeys.indexOf(_semAcento(nome));
+    if (i < 0) faltando.push(nome); else col[nome] = i;
+  });
+  if (faltando.length) {
+    return { erroFatal: `Faltam colunas na aba "Classificação": ${faltando.join(', ')}.` };
+  }
+
+  const erros = new Map();
+  const indice = _indiceTipos();
+  const transactions = [], pendentes = [];
+  let seq = 0;
+
+  for (let i = hIdx + 1; i < rawRows.length; i++) {
+    const r = rawRows[i];
+    if (!r || !r.some(v => v !== null && String(v).trim() !== '')) continue; // linha vazia
+    const linha = linhaBase + i + 1; // linha real do Excel (1-based)
+    let linhaOk = true;
+    const bad = msg => {
+      if (!erros.has(msg)) erros.set(msg, []);
+      erros.get(msg).push(linha);
+      linhaOk = false;
+    };
+    const get = n => r[col[n]];
+    const txt = n => { const v = get(n); return v == null ? '' : String(v).trim(); };
+
+    const dComp  = _parseDataCelula(get('Data Competência'));
+    const dCaixa = _parseDataCelula(get('Data Caixa'));
+    if (!dComp)  bad('Data Competência vazia ou inválida');
+    if (!dCaixa) bad('Data Caixa vazia ou inválida');
+
+    const valor = _parseValorCelula(get('Valor'));
+    if (!(valor > 0)) bad('Valor vazio, zero, negativo ou inválido (deve ser sempre positivo)');
+
+    const origemTxt = txt('Origem');
+    const oLow = origemTxt.toLowerCase();
+    let tipo = null;
+    if (oLow === 'despesa') tipo = 'Gasto';
+    else if (oLow === 'receita') tipo = 'Ganho';
+    else if (oLow === 'outro') tipo = 'Outro';
+    else bad(`Origem "${origemTxt || '(vazio)'}" (só RECEITA, DESPESA e OUTRO são aceitos)`);
+
+    const obTxt = txt('Origem Base');
+    const obLow = obTxt.toLowerCase();
+    const origemBase = obLow === 'despesa' ? 'DESPESA' : (obLow === 'receita' ? 'RECEITA' : null);
+    if (!origemBase) bad(`Origem Base "${obTxt || '(vazio)'}" (só RECEITA e DESPESA são aceitos)`);
+
+    const catTxt = txt('Categoria');
+    const tipoTxt = txt('TIPO SUGERIDO');
+    if (!catTxt) bad('Categoria vazia');
+    if (!tipoTxt) {
+      bad('TIPO SUGERIDO vazio');
+    } else {
+      const achado = indice.get(normalizeName(tipoTxt));
+      if (!achado) {
+        bad(`Tipo "${tipoTxt}" não existe na Árvore`);
+      } else {
+        if (catTxt && normalizeName(catTxt) !== achado.cat) {
+          bad(`Categoria "${catTxt}" não corresponde ao Tipo "${tipoTxt}" (na Árvore: "${nomeArvore('cat', achado.cat)}")`);
+        }
+        if (tipo && achado.tipo !== tipo) {
+          bad(`Origem "${origemTxt}" não corresponde ao Tipo "${tipoTxt}" (na Árvore: ${achado.origemNome})`);
+        }
+      }
+    }
+
+    const stRaw = txt('STATUS');
+    const stKey = _semAcento(stRaw);
+    let status = null;
+    if (stKey === 'ok - confere') status = STATUS_OK;
+    else if (stKey === 'analisar/classificar') status = STATUS_PEND;
+    else bad(`STATUS "${stRaw || '(vazio)'}" (só "${STATUS_OK}" e "${STATUS_PEND}" são aceitos)`);
+
+    if (!linhaOk) continue;
+
+    const arquivo = txt('Arquivo de Origem');
+    const t = {
+      idx: 0,
+      id: seq++,
+      _excelRow: i,               // âncora interna: posição da linha no arquivo
+      dataCompetencia: dComp,
+      dataCaixa: dCaixa,
+      date: dComp, month: null, monthKey: null,
+      tipo,
+      desc: txt('Descrição') || 'Sem descrição',
+      cat: normalizeName(catTxt),
+      subcat: normalizeName(tipoTxt),
+      recurso: arquivo || 'Recurso não informado',
+      arquivoOrigem: arquivo,
+      observacao: txt('Observação'),
+      origemBase,
+      status,
+      justificativa: txt('Justificativa'),
+      valor,
+      valorRaw: tipo === 'Gasto' ? valor : -valor,
+    };
+    _aplicarRegime(t);
+    (status === STATUS_OK ? transactions : pendentes).push(t);
+  }
+
+  if (erros.size) return { erros };
+  return { transactions, pendentes, sheetName };
+}
+
+// Aba opcional "Registros Excluídos": mesmas 12 colunas + Data/Hora da Exclusão + Excluído por.
+// Leitura tolerante — é só um histórico; linhas ilegíveis são ignoradas.
+function parseExcluidosSheet(wb) {
+  const nome = wb.SheetNames.find(n => _semAcento(n) === 'registros excluidos');
+  if (!nome) return [];
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[nome], { header: 1, defval: null });
+  if (!rows.length) return [];
+  const hk = rows[0].map(_semAcento);
+  const ix = n => hk.indexOf(_semAcento(n));
+  const out = [];
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i]; if (!r || !r.some(v => v != null && String(v).trim() !== '')) continue;
+    const g = n => { const k = ix(n); return k < 0 ? null : r[k]; };
+    const tx = n => { const v = g(n); return v == null ? '' : String(v).trim(); };
+    const dComp = _parseDataCelula(g('Data Competência')), dCaixa = _parseDataCelula(g('Data Caixa'));
+    const valor = _parseValorCelula(g('Valor'));
+    if (!(dComp || dCaixa) || !(valor > 0)) continue;
+    const o = tx('Origem').toLowerCase();
+    const tipo = o === 'receita' ? 'Ganho' : (o === 'outro' ? 'Outro' : 'Gasto');
+    const ob = tx('Origem Base').toLowerCase() === 'receita' ? 'RECEITA' : 'DESPESA';
+    const dh = g('Data/Hora da Exclusão');
+    let dhd = dh instanceof Date ? dh : (dh ? new Date(String(dh).replace(/^(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1')) : null);
+    if (!dhd || isNaN(dhd.getTime())) dhd = new Date();
+    const por = _semAcento(tx('Excluído por')) === 'planejador' ? 'planejador' : 'cliente';
+    const arq = tx('Arquivo de Origem');
+    out.push({ por, dh: dhd, t: {
+      idx: 0, id: 0, _excelRow: null, dataCompetencia: dComp || dCaixa, dataCaixa: dCaixa || dComp, date: dComp || dCaixa,
+      tipo, desc: tx('Descrição') || 'Sem descrição', cat: normalizeName(tx('Categoria')), subcat: normalizeName(tx('TIPO SUGERIDO')),
+      recurso: arq, arquivoOrigem: arq, observacao: tx('Observação'), origemBase: ob,
+      status: _semAcento(tx('STATUS')) === 'analisar/classificar' ? STATUS_PEND : STATUS_OK,
+      justificativa: tx('Justificativa'), valor, valorRaw: tipo === 'Gasto' ? valor : -valor } });
+  }
+  return out;
+}
+
+// Serial do Excel a partir dos componentes LOCAIS da data — independe de fuso/horário de verão.
+function _serialExcel(d, comHora) {
+  if (!(d instanceof Date) || isNaN(d.getTime())) return null;
+  const ms = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(),
+    comHora ? d.getHours() : 0, comHora ? d.getMinutes() : 0, comHora ? d.getSeconds() : 0);
+  return ms / 86400000 + 25569;
+}
+
+function _formatarErrosClassif(erros) {
+  const MAX_ITENS = 15, MAX_LINHAS = 10;
+  const entradas = Array.from(erros.entries());
+  const todas = new Set();
+  entradas.forEach(([, a]) => a.forEach(l => todas.add(l)));
+  const fmtL = a => {
+    const u = [...new Set(a)];
+    const l = u.slice(0, MAX_LINHAS).join(', ');
+    return u.length > MAX_LINHAS ? `${l} e mais ${u.length - MAX_LINHAS}` : l;
+  };
+  const itens = entradas.slice(0, MAX_ITENS)
+    .map(([m, a]) => `• ${m} — linha${new Set(a).size !== 1 ? 's' : ''} ${fmtL(a)}`);
+  if (entradas.length > MAX_ITENS) itens.push(`… e mais ${entradas.length - MAX_ITENS} tipo(s) de erro`);
+  return `O arquivo NÃO foi carregado: ${todas.size} linha(s) com erro na aba "Classificação".\n\n${itens.join('\n')}\n\nO arquivo precisa ser corrigido na origem (por quem o gerou) antes de abrir no dashboard.`;
+}
+
 function parseExcel(file) {
   const reader = new FileReader();
 
@@ -2355,163 +2785,42 @@ function parseExcel(file) {
       STATE._lastFileData = e.target.result; // binário mantido para exportarRegistrosXLSX
       const wb = XLSX.read(e.target.result, {type:'array', cellDates:true});
 
-      const sheetName              = detectSheetName(wb);
-      const ws                     = wb.Sheets[sheetName];
-      const { rawRows, headerRowIdx, headerRow, cols: detectedCols } = parseSheetMeta(ws);
-      // Guarda o headerRowIdx no contexto para que exportarRegistrosXLSX
-      // não precise recalculá-lo (evita divergência se sheet_to_json se comportar
-      // diferente ao reler o binário vs. reler a sheet em memória).
-      let _headerRowIdx = headerRowIdx;
-
-      // Converte a partir da linha do cabeçalho encontrada
-      const rows = rawRows.slice(headerRowIdx + 1).map(r => {
-        const obj = {};
-        headerRow.forEach((h, i) => { if (h != null) obj[String(h).trim()] = r[i] ?? null; });
-        return obj;
-      }).filter(r => Object.values(r).some(v => v !== null));
-
-      if (!rows.length) { showError('Planilha vazia ou formato não reconhecido.'); return; }
-
-      // Remove linhas com erros do Excel (#REF!, #N/A, etc.)
-      const cleanRows = rows.filter(r => {
-        return Object.values(r).some(v => v !== null && !String(v).startsWith('#'));
-      });
-
-      if (!cleanRows.length) { showError('Nenhuma linha válida encontrada na planilha.'); return; }
-
-      // cols já vem do parseSheetMeta — usa detectedCols para manter o nome local esperado
-      const cols = detectedCols;
-
-      if (!cols.colValor || !cols.colData) {
-        showError('Colunas obrigatórias não encontradas. Verifique se a planilha tem "Data" e "Valor".');
+      const res = parseClassificacao(wb);
+      if (res.erroFatal) { hideLoading(); showAviso(res.erroFatal); return; }
+      if (res.erros) { hideLoading(); showAviso(_formatarErrosClassif(res.erros)); return; }
+      if (!res.transactions.length && !res.pendentes.length) {
+        hideLoading();
+        showAviso('A aba "Classificação" não tem registros.');
         return;
       }
 
-      // Captura os metadados mínimos para exportarRegistrosXLSX — evita manter
-      // o binário inteiro (~10MB) em memória só para uma exportação eventual.
-      const _budgetSheetName = wb.SheetNames.find(s => {
-        const sl = s.toLowerCase();
-        return sl !== sheetName.toLowerCase() &&
-               (sl.includes('orç') || sl.includes('orc') || sl.includes('budget') || sl.includes('meta'));
-      });
-      STATE._exportMeta = {
-        sheetName,
-        headerRow: [...headerRow],
-        cols: { ...detectedCols },
-        budgetSheet: _budgetSheetName ? wb.Sheets[_budgetSheetName] : null,
-        budgetSheetName: _budgetSheetName || null,
-      };
+      // Só chega aqui com o arquivo 100% válido — a partir daqui o estado é atualizado.
+      STATE._exportMeta = { sheetName: res.sheetName };
 
-      // Reserva de Emergência: lê a aba dedicada se existir nesta planilha, senão
-      // começa do zero — nunca herda dados de um arquivo carregado anteriormente.
+      // Reserva de Emergência / Metas: lê as abas dedicadas se existirem nesta planilha,
+      // senão começa do zero — nunca herda dados de um arquivo carregado anteriormente.
       STATE.RESERVA = parseReservaSheet(wb);
       STATE.RESERVA.ativos = parseAtivosReservaSheet(wb);
+      STATE.METAS = parseMetasSheet(wb);
+      STATE.INSTITUICOES = parseInstituicoesSheet(wb);
+      STATE._ehDoZero = false;
+      STATE._instAlterada = false;
 
-      // Itera sobre rawRows diretamente (a partir do cabeçalho+1) para preservar
-      // o índice real de cada linha no Excel — gravado em _excelRow na transação.
-      // Isso elimina o realinhamento frágil por contador no exportarRegistrosXLSX.
-      const dataRowsRaw = rawRows.slice(headerRowIdx + 1);
-      const transactions = [];
-      const _tipoNaoReconhecido = new Map(); // valor bruto da coluna Gasto/Ganho → contagem, quando não é "Gasto"/"Ganho"/"Outro"
-      dataRowsRaw.forEach((r, rawIdx) => {
-        // Linha vazia ou só com erros Excel: pula sem contar
-        if (!r || !Object.values(r).some(v => v !== null && !String(v).startsWith('#'))) return;
+      STATE.PENDENTES = res.pendentes;
+      STATE.EXCLUIDOS = parseExcluidosSheet(wb);
+      STATE.regModoPendentes = false; STATE.regModoTransf = false;
+      STATE.REGIME = 'competencia'; // ao abrir, sempre pelo regime de competência
+      atualizarRegimeUI();
+      res.transactions.forEach(_aplicarRegime);
 
-        // Reconstrói o objeto chave→valor a partir do headerRow (igual ao parseSheetMeta)
-        const row = {};
-        headerRow.forEach((h, i) => { if (h != null) row[String(h).trim()] = r[i] ?? null; });
-
-        const rawDate = cols.colData  ? row[cols.colData]  : null;
-        const rawVal  = cols.colValor ? row[cols.colValor] : null;
-        if (!rawDate || rawVal == null) return;
-
-        // Classificação estrita da coluna Gasto/Ganho: só reconhece "Gasto", "Ganho"
-        // e "Outro". Qualquer outro texto é tratado como "Outro" (fica fora dos
-        // cálculos, visível só em Registros) e registrado em _tipoNaoReconhecido
-        // para avisar o usuário antes de finalizar a importação.
-        const tipoMov = cols.colTipo ? String(row[cols.colTipo]||'').trim() : '';
-        let tipo;
-        if (!cols.colTipo) {
-          // Sem coluna de origem na planilha — mantém o fallback histórico pelo sinal do valor
-          tipo = parseFloat(rawVal) < 0 ? 'Gasto' : 'Ganho';
-        } else {
-          const tipoLower = tipoMov.toLowerCase();
-          if (tipoLower.includes('gasto'))      tipo = 'Gasto';
-          else if (tipoLower.includes('ganho')) tipo = 'Ganho';
-          else if (tipoLower === 'outro')       tipo = 'Outro';
-          else {
-            tipo = 'Outro';
-            const chave = tipoMov || '(vazio)';
-            _tipoNaoReconhecido.set(chave, (_tipoNaoReconhecido.get(chave)||0) + 1);
-          }
-        }
-
-        // Parse de data: aceita Date nativo, string dd/mm/yyyy, ou número serial Excel
-        let date;
-        if (rawDate instanceof Date) {
-          date = rawDate;
-        } else if (typeof rawDate === 'string') {
-          const parts = rawDate.split('/');
-          date = parts.length === 3
-            ? new Date(+parts[2], +parts[1]-1, +parts[0])
-            : new Date(rawDate);
-        } else if (typeof rawDate === 'number') {
-          const d = XLSX.SSF.parse_date_code(rawDate);
-          date = new Date(d.y, d.m-1, d.d);
-        } else return;
-
-        if (isNaN(date.getTime())) return;
-
-        const val = parseFloat(rawVal);
-        if (isNaN(val)) return;
-
-        const monthKey = `${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`;
-        const month    = new Date(date.getFullYear(), date.getMonth(), 1)
-          .toLocaleDateString('pt-BR',{month:'short',year:'numeric'}).replace('. ','/');
-
-        const rawCat    = cols.colCat     ? String(row[cols.colCat]    ||'') : '';
-        const rawSubcat = cols.colSubcat  ? String(row[cols.colSubcat] ||'') : '';
-        const rawRecurso= cols.colRecurso ? String(row[cols.colRecurso]||'') : '';
-
-        transactions.push({
-          idx      : transactions.length,   // posição no array — estável para renders
-          id       : transactions.length,   // id imutável — sobrevive a reordenações
-          _excelRow: headerRowIdx + 1 + rawIdx, // linha real no Excel — âncora para export
-          date,
-          month,
-          monthKey,
-          tipo,
-          desc  : cols.colDesc ? String(row[cols.colDesc]||'Sem descrição') : 'Sem descrição',
-          cat   : normalizeName(rawCat),
-          subcat: normalizeName(rawSubcat),
-          recurso: rawRecurso.trim() || 'Recurso não informado',
-          valor : Math.abs(val),
-          valorRaw: val,
-        });
-      });
-
-      if (!transactions.length) { showError('Nenhuma transação válida encontrada.'); return; }
-
-      const finalizarImportacao = () => {
-        processData(transactions, file.name, sheetName);
-        // Armazena o índice do cabeçalho para que exportarRegistrosXLSX
-        // use o valor exato calculado neste parse, sem recalcular do binário.
-        if (STATE.DATA) STATE.DATA._headerRowIdx = _headerRowIdx;
-      };
-
-      if (_tipoNaoReconhecido.size > 0) {
-        hideLoading();
-        const linhas = Array.from(_tipoNaoReconhecido.entries())
-          .map(([valor, n]) => `• "${valor}" (${n} registro${n!==1?'s':''})`)
-          .join('\n');
-        showConfirm(
-          `Encontramos valores inesperados na coluna "Gasto/Ganho" — só "Gasto", "Ganho" e "Outro" são reconhecidos:\n\n${linhas}\n\nEsses registros serão tratados como "Outro" (fora dos cálculos, visíveis só em Registros) até a planilha ser corrigida. Deseja continuar mesmo assim?`,
-          finalizarImportacao
-        );
-        return;
+      processData(res.transactions, file.name, res.sheetName);
+      if (res.pendentes.length) {
+        showToast(`${res.pendentes.length} registro(s) "${STATUS_PEND}" ficam fora dos números até serem reclassificados.`, 'info');
       }
-
-      finalizarImportacao();
+      if (STATE._corrPorAplicar) { // correções do cliente abertas antes da planilha base
+        const c = STATE._corrPorAplicar; STATE._corrPorAplicar = null;
+        setTimeout(() => _processarCorrecoes(c), 400);
+      }
     } catch(err) {
       hideLoading();
       showError('Erro ao ler o arquivo: ' + err.message);
@@ -2545,6 +2854,11 @@ function isRecInvest(t) {
 
 function processData(transactions, fileName, sheetName, skipBudget = false) {
   if (!skipBudget) hideError();
+
+  // Regime ativo (Competência/Caixa): reaplica a data de referência de cada registro
+  // em TODA passagem — assim trocar o regime ou editar uma data sempre reflete nos meses.
+  transactions.forEach(_aplicarRegime);
+  (STATE.PENDENTES || []).forEach((t, i) => { _aplicarRegime(t); t.idx = i; });
 
   // Re-estampa idx em cada passagem — garante que edições de data (que podem
   // reordenar transações no futuro) não deixem idx apontando para posição errada
@@ -2718,6 +3032,9 @@ function initDashboard() {
   Chart.defaults.plugins.tooltip.cornerRadius    = 8;
 
   updatePeriodBadge();
+  const _rt = document.getElementById('regimeToggle');
+  if (_rt) _rt.style.display = 'inline-flex';
+  atualizarRegimeUI();
 
   document.getElementById('navTabs').style.display = 'flex';
   document.getElementById('tabBudget').style.display = '';
@@ -2977,7 +3294,7 @@ function renderKPIs() {
   document.getElementById('kpiSld').style.color    = totalS >= 0 ? 'var(--teal)' : 'var(--orange)';
   document.getElementById('kpiSldSub').textContent = totalS >= 0 ? 'saldo positivo' : 'saldo negativo';
   document.getElementById('kpiAvg').textContent    = fmtR(avgG);
-  document.getElementById('kpiAvgSub').textContent = `por mês (${idxs.length} mês${idxs.length!==1?'es':''})`;
+  document.getElementById('kpiAvgSub').textContent = `por mês (${idxs.length} ${idxs.length!==1?'meses':'mês'})`;
 }
 
 function renderCharts() {
@@ -3390,11 +3707,158 @@ function switchDashTab(tab, btn) {
   STATE.currentDashTab = tab;
   document.querySelectorAll('.dash-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  const _ehParc = tab === 'parcelas';
+  ['periodLabelWrap', 'monthFilters', 'periodSep'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = _ehParc ? 'none' : ''; });
   document.querySelectorAll('.dash-panel').forEach(p => p.style.display = 'none');
   const panelId = 'panel' + tab.charAt(0).toUpperCase() + tab.slice(1);
   const panel = document.getElementById(panelId);
   if (panel) panel.style.display = '';
   renderAll();
+}
+
+// ── Parcelas no cartão: projeção calculada a partir da Descrição ─────────────
+// Nada é gravado: tudo sai das transações ativas a cada renderização.
+function _mesIdx(d) { return d.getFullYear() * 12 + d.getMonth(); }
+function _mesLabel(idx) {
+  const y = Math.floor(idx / 12), m = idx % 12;
+  return new Date(y, m, 1).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '') + '/' + String(y).slice(2);
+}
+function calcParcelas() {
+  const txs = STATE.DATA ? STATE.DATA.transactions : [];
+  if (!txs.length) return { compras: [], meses: [], ultimoMes: null };
+  const dataRef = t => t.dataCaixa || t.date;
+  const ultimoMes = Math.max(...txs.map(t => _mesIdx(dataRef(t))));
+  const grupos = new Map();
+  txs.forEach(t => {
+    if (t.tipo !== 'Gasto' || _mesIdx(dataRef(t)) !== ultimoMes) return;
+    // Só fatura de cartão: o arquivo de origem precisa indicar cartão, e Pix/TED/DOC/transferências ficam de fora
+    // (a data dd/mm no fim do Pix tem o mesmo formato de uma parcela)
+    if (!_ehCartaoOrigem(t.arquivoOrigem)) return;
+    if (/^\s*(pix|ted|doc|transf)/i.test(t.desc || '')) return;
+    const m = String(t.desc || '').match(/(?:^|\s)(\d{1,2})\s*\/\s*(\d{1,2})\s*$/);
+    if (!m) return;
+    const a = +m[1], b = +m[2];
+    if (!(a >= 1 && b >= 2 && b <= 60 && a <= b)) return;
+    const base = String(t.desc).slice(0, m.index).trim().toLowerCase().replace(/\s+/g, ' ');
+    const chave = base + '|' + t.valor.toFixed(2);
+    const mes = _mesIdx(dataRef(t));
+    const g = grupos.get(chave);
+    // vale a parcela mais avançada; em empate, a de mês mais recente
+    if (!g || a > g.a || (a === g.a && mes > g.mes)) {
+      grupos.set(chave, { desc: String(t.desc).slice(0, m.index).trim() || t.desc, a, b, mes, valor: t.valor });
+    }
+  });
+  const compras = [];
+  const porMes = new Map();
+  const termina = new Map();
+  grupos.forEach(g => {
+    const restantes = [];
+    for (let k = 1; g.a + k <= g.b; k++) {
+      const mes = g.mes + k;
+      if (mes > ultimoMes) restantes.push({ mes, n: g.a + k });
+    }
+    if (!restantes.length) return;
+    restantes.forEach(r => porMes.set(r.mes, (porMes.get(r.mes) || 0) + g.valor));
+    const fim = restantes[restantes.length - 1].mes;
+    termina.set(fim, [...(termina.get(fim) || []), g]);
+    compras.push({ desc: g.desc, a: g.a,
+      b: g.b, valor: g.valor, restantes: restantes.length, totalRestante: g.valor * restantes.length, fim });
+  });
+  const meses = [...porMes.keys()].sort((x, y) => x - y).map(mes => ({ mes, valor: porMes.get(mes) }));
+  return { compras: compras.sort((x, y) => y.totalRestante - x.totalRestante), meses, ultimoMes, termina };
+}
+// Renda média: últimos 12 meses até o último mês processado (ou os que existirem); receitas pelo mês de entrada (Data Caixa)
+function _rendaBase() {
+  const txs = STATE.DATA ? STATE.DATA.transactions : [];
+  if (!txs.length) return { renda: 0, n: 0, ini: null, fim: null, temGanho: false, temInvest: false };
+  const ref = t => _mesIdx(t.dataCaixa || t.date);
+  const fim = Math.max(...txs.map(ref));
+  const ini = Math.max(Math.min(...txs.map(ref)), fim - 11);
+  const n = fim - ini + 1;
+  let tot = 0, temGanho = false, temInvest = false;
+  txs.forEach(t => {
+    if (t.tipo !== 'Ganho') return;
+    const m = ref(t);
+    if (m < ini || m > fim) return;
+    temGanho = true;
+    if ((t.cat || '').toLowerCase() === CATS.REC_INVEST_LOW) { temInvest = true; return; }
+    tot += t.valor;
+  });
+  return { renda: tot / n, n, ini, fim, temGanho, temInvest };
+}
+function _rendaMediaPeriodo() { return _rendaBase().renda; }
+function _rendaMotivo() {
+  const b = _rendaBase();
+  return b.temGanho ? 'só há receitas de investimento nos meses considerados' : 'sem receitas nos meses considerados';
+}
+function _corPct(p) { return p > 0.5 ? '#dc2626' : (p > 0.3 ? '#d97706' : '#0F6E56'); }
+function renderParcelas() {
+  if (!STATE.DATA) return;
+  const P = calcParcelas();
+  const renda = _rendaMediaPeriodo();
+  const total = P.meses.reduce((a, m) => a + m.valor, 0);
+  const nParc = P.compras.reduce((a, c) => a + c.restantes, 0);
+  const pico = P.meses.reduce((best, m) => (!best || m.valor > best.valor ? m : best), null);
+  const pct = v => renda > 0 ? v / renda : null;
+  const pctTxt = v => renda > 0 ? (v / renda >= 10 ? 'mais de 1.000%' : Math.round(v / renda * 100) + '%') : '—';
+  const mesesTxt = n => n + (n === 1 ? ' mês' : ' meses');
+
+  const kpi = (cor, label, valor, sub) => `<div class="kpi-card"><div class="kpi-label"><span class="kpi-dot" style="background:${cor}"></span>${label}</div><div class="kpi-value">${valor}</div><div class="kpi-sub">${sub}</div></div>`;
+  document.getElementById('parcKpis').innerHTML =
+    kpi('var(--orange)', 'Já comprometido', fmtR(total), P.meses.length ? `em ${mesesTxt(P.meses.length)} futuro${P.meses.length !== 1 ? 's' : ''}` : 'nenhuma parcela futura') +
+    kpi('var(--blue)', 'Parcelas a vencer', String(nParc), `${P.compras.length} compra${P.compras.length !== 1 ? 's' : ''} parcelada${P.compras.length !== 1 ? 's' : ''}`) +
+    kpi('var(--teal)', 'Renda média mensal', renda > 0 ? fmtR(renda) : 'Sem renda', renda > 0 ? (() => { const b = _rendaBase(); return `média de ${b.n === 1 ? '1 mês' : b.n + ' meses'} (${_mesLabel(b.ini)}${b.n > 1 ? ' a ' + _mesLabel(b.fim) : ''}), sem resgates`; })() : _rendaMotivo()) +
+    kpi('var(--red)', 'Mês mais pesado', pico ? fmtR(pico.valor) : '—', pico ? `${_mesLabel(pico.mes)}${renda > 0 ? ' · ' + pctTxt(pico.valor) + ' da renda' : ''}` : '—');
+
+  const res = document.getElementById('parcResumo');
+  if (!P.meses.length) {
+    res.innerHTML = 'Nenhuma parcela futura encontrada neste arquivo. Quando houver compras parceladas, aparecerão aqui.';
+  } else {
+    const prox = P.meses[0];
+    res.innerHTML = `Você já tem <strong>${fmtR(total)}</strong> comprometidos em parcelas de cartão nos próximos ${mesesTxt(P.meses.length)}.` +
+      (renda <= 0 ? ` Não foi possível comparar com a renda: ${_rendaMotivo()}.` : '') +
+      (renda > 0 ? ` Só em <strong>${_mesLabel(prox.mes)}</strong>, ${fmtR(prox.valor)} da sua renda (${pctTxt(prox.valor)}) já está tomado antes de você gastar com qualquer outra coisa.` : '');
+  }
+
+  // Gráfico: barras por mês + linha de renda média
+  const labels = P.meses.map(m => _mesLabel(m.mes));
+  const dados = P.meses.map(m => m.valor);
+  const cores = P.meses.map(m => renda > 0 ? _corPct(m.valor / renda) : '#d97706');
+  if (parcChart) { parcChart.destroy(); parcChart = null; }
+  const cv = document.getElementById('parcChart');
+  if (cv && P.meses.length) {
+    parcChart = new Chart(cv, {
+      type: 'bar',
+      data: { labels, datasets: [
+        { label: 'Parcelas comprometidas', data: dados, backgroundColor: cores, borderRadius: 4 },
+        ...(renda > 0 ? [{ label: 'Renda média mensal', data: labels.map(() => renda), backgroundColor: 'rgba(37,99,168,.35)', borderColor: '#2563A8', borderWidth: 1, borderRadius: 4 }] : []),
+      ]},
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false },
+          tooltip: { callbacks: {
+            label: c => c.datasetIndex === 1
+              ? ` Renda média: ${fmtR(c.parsed.y)}`
+              : ` Parcelas: ${fmtR(c.parsed.y)}${renda > 0 ? ' · ' + pctTxt(c.parsed.y) + ' da renda' : ''}`,
+            afterBody: items => renda > 0 ? ['Livre: ' + fmtR(renda - items[0].parsed.y)] : [] } } },
+        scales: { y: { beginAtZero: true, ticks: { callback: v => 'R$' + (v >= 1000 ? Math.round(v / 1000) + 'k' : v) } },
+                  x: { grid: { display: false } } } }
+    });
+  }
+
+  // Quando alivia: meses em que alguma compra termina
+  const al = document.getElementById('parcAlivio');
+  const fins = [...(P.termina || new Map()).entries()].sort((x, y) => x[0] - y[0]);
+  al.innerHTML = fins.length ? fins.map(([mes, gs]) => {
+    const lib = gs.reduce((a, g) => a + g.valor, 0);
+    return `<div class="parc-alivio-item"><span><strong>${_mesLabel(mes)}</strong> · ${gs.length} compra${gs.length !== 1 ? 's' : ''} termina${gs.length !== 1 ? 'm' : ''}<br><span style="font-size:11px;color:var(--mgray)">${gs.slice(0, 3).map(g => _escHtml(g.desc)).join(', ')}${gs.length > 3 ? '…' : ''}</span></span><strong style="color:var(--teal);white-space:nowrap">+ ${fmtR(lib)}/mês</strong></div>`;
+  }).join('') : '<div class="parc-vazio">Nenhuma compra termina nos meses projetados.</div>';
+
+  // Tabela das compras
+  const tb = document.getElementById('parcTabela');
+  tb.innerHTML = P.compras.length ? `<table class="monthly-table"><thead><tr><th>Compra</th><th>Parcela atual</th><th>Faltam</th><th>Valor da parcela</th><th>Total restante</th><th>Última parcela</th></tr></thead><tbody>` +
+    P.compras.map(c => `<tr><td style="font-weight:600">${_escHtml(c.desc)}</td><td>${c.a}/${c.b}</td><td>${c.restantes}</td><td style="font-family:'DM Mono',monospace;font-size:12px">${fmtR(c.valor)}</td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--orange);font-weight:700">${fmtR(c.totalRestante)}</td><td>${_mesLabel(c.fim)}</td></tr>`).join('') +
+    `<tr class="total-row"><td>Total</td><td></td><td>${nParc}</td><td></td><td>${fmtR(total)}</td><td></td></tr></tbody></table>`
+    : '<div class="parc-vazio">Nenhuma compra parcelada em aberto.</div>';
 }
 
 function renderStackedBar() {
@@ -3438,6 +3902,9 @@ function renderAll() {
     renderHeatmapReceitas();
     renderTopList('receitas');
 
+  } else if (STATE.currentDashTab === 'parcelas') {
+    renderParcelas();
+
   } else if (STATE.currentDashTab === 'despesas') {
     renderKPIsDespesas();
     renderBarDespesas();
@@ -3454,9 +3921,16 @@ function renderAll() {
 function handleFile(file) {
   if (!file) return;
   if (file.name.match(/\.dat$/i)) {
-    _ativarModo('cliente');
-    showLoading('Abrindo arquivo…', 'Aguarde um momento');
-    importarDAT(file);
+    // Retorno de cliente (correções) abre no modo planejador; arquivo completo abre no modo cliente
+    const sn = new FileReader();
+    sn.onload = () => {
+      const ini = String(sn.result).slice(0, 4);
+      if (ini === DAT_MAGIC_CHAVE || ini === DAT_MAGIC_CORR) { _ativarModo('planejador'); importarCorrecoes(file); return; }
+      _ativarModo('cliente');
+      showLoading('Abrindo arquivo…', 'Aguarde um momento');
+      importarDAT(file);
+    };
+    sn.readAsText(file.slice(0, 4));
     return;
   }
   if (!file.name.match(/\.(xlsx|xls)$/i)) {
@@ -3467,6 +3941,43 @@ function handleFile(file) {
   hideError();
   showLoading('Lendo arquivo…', 'Isso pode levar alguns segundos em arquivos grandes');
   parseExcel(file);
+}
+
+// Cliente sem arquivo: abre o dashboard vazio para lançar tudo manualmente.
+// Os lançamentos ficam só na memória até o cliente gerar o arquivo de correções.
+function _iniciarBaseVazia(modo, nome) {
+  hideError();
+  _ativarModo(modo);
+  STATE.PENDENTES = [];
+  STATE.EXCLUIDOS = [];
+  STATE.REGIME = 'competencia';
+  STATE.RESERVA = defaultReserva();
+  STATE.METAS = defaultMetas();
+  STATE.INSTITUICOES = [];
+  STATE.BUDGET = null;
+  STATE._exportMeta = { sheetName: 'Classificação' };
+  atualizarRegimeUI();
+  processData([], nome, '', /*skipBudget=*/true);
+  initDashboard();
+}
+function iniciarDoZero() {
+  hideError();
+  _ativarModo('cliente');
+  STATE.PENDENTES = [];
+  STATE.EXCLUIDOS = [];
+  STATE.REGIME = 'competencia';
+  STATE.RESERVA = defaultReserva();
+  STATE.METAS = defaultMetas();
+  STATE.INSTITUICOES = [];
+  STATE._instAlterada = false;
+  STATE._ehDoZero = true; STATE._pubDoDat = null; STATE._senhaDat = null;
+  STATE.BUDGET = null;
+  STATE._exportMeta = { sheetName: 'Classificação' };
+  atualizarRegimeUI();
+  processData([], 'Novo arquivo', '', /*skipBudget=*/true);
+  initDashboard();
+  switchView('registros');
+  showToast('Comece adicionando seu primeiro lançamento em "Novo registro".', 'info');
 }
 
 function _ativarModo(modo) {
@@ -3483,12 +3994,16 @@ function _ativarModo(modo) {
 
   // Coluna de seleção múltipla e botão de exclusão em massa — só no modo planejador
   const selAllTh = document.getElementById('regSelectAllTh');
-  if (selAllTh) selAllTh.style.display = isPlan ? '' : 'none';
-  document.getElementById('btnExcluirSelecionados').style.display = isPlan ? '' : 'none';
-  document.getElementById('btnNovoRegistro').style.display = isPlan ? '' : 'none';
+  if (selAllTh) selAllTh.style.display = '';
+  document.getElementById('btnExcluirSelecionados').style.display = '';
+  document.getElementById('btnReclassificarSelecionados').style.display = '';
+  STATE.regModoPendentes = false; STATE.regModoTransf = false;
+  document.getElementById('btnNovoRegistro').style.display = ''; // disponível também no modo cliente
 
   // Botão "Gerar .dat" — visível só para o planejador
   document.getElementById('btnGerarDat').style.display = isPlan ? '' : 'none';
+  document.getElementById('btnChaves').style.display = isPlan ? '' : 'none';
+  document.getElementById('btnSalvarProgresso').style.display = isPlan ? 'none' : '';
 
   // Botão de exportação de registros (XLSX) — oculto no modo cliente
   document.getElementById('btnExportRegXLSX').style.display = isPlan ? '' : 'none';
@@ -3502,35 +4017,20 @@ function _ativarModo(modo) {
 
   // Tela de upload — descrição e dica de formato adaptadas
   const desc = document.getElementById('uploadDesc');
-  if (desc) desc.innerHTML = isPlan
-    ? 'Arraste sua planilha Excel aqui ou clique para selecionar.<br>O dashboard lerá os dados automaticamente e montará os gráficos.'
-    : 'Arraste o arquivo <strong>.dat</strong> enviado pelo seu planejador financeiro ou clique para selecioná-lo.';
-
-  const dzLabel = document.getElementById('dropZoneLabel');
-  if (dzLabel) dzLabel.textContent = isPlan ? 'Arraste o arquivo .xlsx aqui' : 'Arraste o arquivo .dat aqui';
+  if (desc) desc.textContent = isPlan
+    ? 'Abra a planilha de classificação ou comece um novo arquivo.'
+    : 'Abra o arquivo .dat enviado pelo seu planejador ou comece do zero.';
 
   const btnUp = document.getElementById('btnUpload');
-  if (btnUp) btnUp.textContent = isPlan ? 'Selecionar Planilha' : 'Selecionar arquivo .dat';
-
-  const hint = document.getElementById('uploadHint');
-  if (hint) hint.style.display = isPlan ? '' : 'none';
+  if (btnUp) btnUp.textContent = isPlan ? 'Selecionar planilha' : 'Selecionar arquivo .dat';
 
   _atualizaBtnCorrecoes();
 }
 
-const dz = document.getElementById('dropZone');
-dz.addEventListener('click', () => document.getElementById('fileInput').click());
-dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file) handleFile(file);
-});
 document.body.addEventListener('dragover', e => e.preventDefault());
 document.body.addEventListener('drop', e => {
   e.preventDefault();
-  if (STATE.DATA) { const file = e.dataTransfer.files[0]; if(file) handleFile(file); }
+  const file = e.dataTransfer.files[0]; if (file) handleFile(file); // arrastar em qualquer lugar da página continua funcionando
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -3548,8 +4048,8 @@ function openModal(title, subtitle, rows, isReceita=false) {
 
   // Checkbox de seleção múltipla e botão de exclusão em massa — só no modo planejador
   const isPlan = STATE.MODO === 'planejador';
-  document.getElementById('modalSelectAllTh').style.display = isPlan ? '' : 'none';
-  document.getElementById('btnExcluirSelecionadosModal').style.display = isPlan ? '' : 'none';
+  document.getElementById('modalSelectAllTh').style.display = '';
+  document.getElementById('btnExcluirSelecionadosModal').style.display = '';
 
   renderModalStats();
 
@@ -3582,12 +4082,12 @@ function closeModal() {
 
 // ── Exclusão dentro do modal de drilldown (individual e em massa) ───────────
 function excluirRegistroModal(txIdx) {
-  if (STATE.MODO !== 'planejador') return;
   if (!STATE.DATA) return;
   const t = STATE.DATA.transactions[txIdx];
   if (!t) return;
 
-  showConfirm(`Excluir o registro "${t.desc}" de ${fmtR(t.valor)}? Esta ação não pode ser desfeita.`, () => {
+  showConfirm(`Excluir o registro "${t.desc}" de ${fmtR(t.valor)}? A exclusão fica registrada na aba "Registros Excluídos".`, () => {
+    _logExclusao(t);
     STATE.DATA.transactions.splice(txIdx, 1);
     STATE.modalSelecionados.delete(txIdx);
     STATE.modalRows = STATE.modalRows.filter(r => r !== t);
@@ -3637,7 +4137,6 @@ function atualizarToolbarBulkModal() {
 }
 
 function excluirRegistrosSelecionadosModal() {
-  if (STATE.MODO !== 'planejador') return;
   if (!STATE.DATA || STATE.modalSelecionados.size === 0) return;
 
   const idxs   = Array.from(STATE.modalSelecionados).sort((a, b) => b - a);
@@ -3645,7 +4144,8 @@ function excluirRegistrosSelecionadosModal() {
   const idxSet = new Set(idxs);
   const removidos = STATE.DATA.transactions.filter((t, i) => idxSet.has(i));
 
-  showConfirm(`Excluir ${n} registro${n !== 1 ? 's' : ''} selecionado${n !== 1 ? 's' : ''}? Esta ação não pode ser desfeita.`, () => {
+  showConfirm(`Excluir ${n} registro${n !== 1 ? 's' : ''} selecionado${n !== 1 ? 's' : ''}? As exclusões ficam registradas na aba "Registros Excluídos".`, () => {
+    removidos.forEach(_logExclusao);
     idxs.forEach(i => {
       if (i >= 0 && i < STATE.DATA.transactions.length) STATE.DATA.transactions.splice(i, 1);
     });
@@ -3711,7 +4211,7 @@ function renderModalTable(rows) {
     const recursoFull  = r.recurso || '—';
     const txIdx = STATE.DATA ? (r.idx ?? STATE.DATA.transactions.indexOf(r)) : -1;
     return `<tr>
-      ${STATE.MODO === 'planejador' ? `<td><input type="checkbox" class="modal-row-chk" data-txidx="${txIdx}" ${STATE.modalSelecionados.has(txIdx)?'checked':''}></td>` : ''}
+      ${true ? `<td><input type="checkbox" class="modal-row-chk" data-txidx="${txIdx}" ${STATE.modalSelecionados.has(txIdx)?'checked':''}></td>` : ''}
       <td style="white-space:nowrap;font-family:'DM Mono',monospace;font-size:12px;color:var(--mgray)">${dateStr}</td>
       <td style="max-width:220px">${hl(r.desc)}${r._edited && r._editedAt ? `<span class="edited-badge" title="Editado em ${r._editedAt.toLocaleString('pt-BR')}">✏ editado</span>` : ''}</td>
       <td><span class="dd-badge" style="background:${catColor}22;color:${catColor}">${hl(r.cat)}</span></td>
@@ -3720,7 +4220,7 @@ function renderModalTable(rows) {
       <td style="text-align:right;font-weight:600;font-family:'DM Mono',monospace;color:${valColor};white-space:nowrap">${fmtR(r.valor)}</td>
       <td style="text-align:center;white-space:nowrap">
         <button class="reg-btn-edit" data-txidx="${txIdx}">✏️</button>
-        ${STATE.MODO === 'planejador' ? `<button class="reg-btn-delete" data-txidx-del="${txIdx}">🗑️</button>` : ''}
+        <button class="reg-btn-delete" data-txidx-del="${txIdx}">🗑️</button>
       </td>
     </tr>`;
   }).join('');
@@ -3854,7 +4354,7 @@ function renderKPIsGeneric(cfg) {
   document.getElementById(cfg.ids.total).textContent   = fmtR(total);
   document.getElementById(cfg.ids.sub).textContent     = `${txs.length} ${cfg.label}`;
   document.getElementById(cfg.ids.avg).textContent     = fmtR(avg);
-  document.getElementById(cfg.ids.avgSub).textContent  = `por mês (${idxs.length} mês${idxs.length!==1?'es':''})`;
+  document.getElementById(cfg.ids.avgSub).textContent  = `por mês (${idxs.length} ${idxs.length!==1?'meses':'mês'})`;
   document.getElementById(cfg.ids.max).textContent     = maxTx ? fmtR(maxTx.valor) : '—';
   document.getElementById(cfg.ids.maxSub).textContent  = maxTx ? (maxTx.desc||'').slice(0,32) : '—';
 }
@@ -4150,6 +4650,7 @@ function switchView(view) {
   document.getElementById('tabReserva').classList.toggle('active',   view==='reserva');
   document.getElementById('tabAdmin').classList.toggle('active',     view==='admin');
   updatePrintButton();
+  if (view === 'dashboard' && STATE._dashStale) { STATE._dashStale = false; buildDashYearButtons(); renderAll(); }
   if (view === 'budget')    renderBudgetScreen();
   if (view === 'invest')    renderInvestScreen();
   if (view === 'registros') initRegistros();
@@ -4692,96 +5193,194 @@ function _budCatGridHtml(cards, isIncome, title) {
 // ══════════════════════════════════════════════════════════════════════════════
 // STATE.BUDGET — RENDER PRINCIPAL
 // ══════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
+// METAS DE ORÇAMENTO — meta por categoria sugerida a partir do histórico, ou
+// travada manualmente. Não depende mais de nenhuma aba de planilha: as metas
+// manuais ficam salvas em STATE.METAS e são persistidas numa aba própria do
+// XLSX exportado e no .dat.
+// ══════════════════════════════════════════════════════════════════════════════
+
+function defaultMetas() {
+  return { baseCalculo: 'ultimo_mes', ordenarPor: 'meta', valores: {} };
+}
+
+// Meses fechados = todos os meses presentes nos dados, exceto o mês corrente
+// (mesmo se hoje for o último dia do mês, ele nunca entra na conta).
+function getMesesFechados() {
+  if (!STATE.DATA) return [];
+  const hoje = new Date();
+  const mesAtualKey = `${String(hoje.getMonth()+1).padStart(2,'0')}/${hoje.getFullYear()}`;
+  return STATE.DATA.monthKeys.filter(mk => mk !== mesAtualKey);
+}
+
+function getMesesParaBase(baseCalculo) {
+  const fechados = getMesesFechados();
+  switch (baseCalculo) {
+    case 'ultimo_mes':       return fechados.slice(-1);
+    case 'trimestre':        return fechados.slice(-3);
+    case 'semestre':         return fechados.slice(-6);
+    case 'ultimos_12_meses': return fechados.slice(-12);
+    case 'ano_atual': {
+      const ano = String(new Date().getFullYear());
+      return fechados.filter(mk => mk.split('/')[1] === ano);
+    }
+    case 'todo_periodo':     return fechados;
+    default:                 return fechados.slice(-1);
+  }
+}
+
+// Série mensal (paralela a STATE.DATA.monthKeys) de uma categoria específica.
+// Categorias sem nenhum lançamento retornam uma série toda zerada — é assim que
+// "categoria sem registro" vira meta 0,00 em vez de desaparecer da lista.
+function _arrayCategoriaPorMes(categoria, isReceita) {
+  const sorted  = isReceita ? (STATE.DATA.incCatSorted  || []) : (STATE.DATA.catSorted  || []);
+  const monthly = isReceita ? (STATE.DATA.incCatMonthly || []) : (STATE.DATA.catMonthly || []);
+  const idx = sorted.findIndex(c => c.toLowerCase() === categoria.toLowerCase());
+  if (idx === -1) return STATE.DATA.monthKeys.map(() => 0);
+  return monthly[idx];
+}
+
+function calcularMediaCategoria(categoria, isReceita, meses) {
+  if (!meses || !meses.length) return 0;
+  const arr = _arrayCategoriaPorMes(categoria, isReceita);
+  const idxPorMes = new Map(STATE.DATA.monthKeys.map((mk, i) => [mk, i]));
+  const soma = meses.reduce((s, mk) => s + (arr[idxPorMes.get(mk)] || 0), 0);
+  return soma / meses.length;
+}
+
+// Meta efetiva de uma categoria: valor travado manualmente, se houver; senão a
+// média sugerida pela base de cálculo atual.
+function getMetaCategoria(categoria, isReceita) {
+  const entry = STATE.METAS.valores[categoria];
+  if (entry && entry.manual) return entry.valor;
+  return calcularMediaCategoria(categoria, isReceita, getMesesParaBase(STATE.METAS.baseCalculo));
+}
+
+function onMetasConfigChange() {
+  if (!STATE.DATA) return;
+  STATE.METAS.baseCalculo = document.getElementById('metasBaseCalculo').value;
+  STATE.METAS.ordenarPor  = document.getElementById('metasOrdenarPor').value;
+  STATE._hasUnsavedChanges = true;
+  atualizarIndicadorAlteracoes();
+  renderBudgetScreen();
+}
+
+function salvarMetaManual(categoria, isReceita, novoValor) {
+  if (STATE.MODO !== 'planejador') return;
+  STATE.METAS.valores[categoria] = { valor: novoValor, manual: true };
+  STATE._hasUnsavedChanges = true;
+  atualizarIndicadorAlteracoes();
+  renderBudgetScreen();
+}
+
+function resetarMetaAutomatica(categoria) {
+  if (STATE.MODO !== 'planejador') return;
+  delete STATE.METAS.valores[categoria];
+  STATE._hasUnsavedChanges = true;
+  atualizarIndicadorAlteracoes();
+  renderBudgetScreen();
+}
+
+function _metasCorStatus(pct, isReceita, metaZero, realZero) {
+  if (metaZero && realZero) return { anel: '#9CA3AF', fundo: 'transparent' };
+  if (isReceita) {
+    if (pct >= 100) return { anel: 'var(--teal)',   fundo: 'var(--lteal)' };
+    if (pct >= 70)  return { anel: '#EAB308',        fundo: 'rgba(234,179,8,.12)' };
+    return                 { anel: 'var(--red)',     fundo: 'var(--lred)' };
+  }
+  if (pct <= 80)  return { anel: 'var(--teal)',   fundo: 'var(--lteal)' };
+  if (pct <= 100) return { anel: '#EAB308',        fundo: 'rgba(234,179,8,.12)' };
+  return                 { anel: 'var(--red)',     fundo: 'var(--lred)' };
+}
+
+function _metaCardHtml(l, isReceita, isPlan) {
+  const metaZero = l.meta === 0, realZero = l.realizado === 0;
+  const semMeta = metaZero && realZero;
+  const pct = l.meta > 0 ? (l.realizado / l.meta * 100) : (l.realizado > 0 ? 999 : 0);
+  const pctClamped = Math.max(0, Math.min(100, pct));
+  const cores = _metasCorStatus(pct, isReceita, metaZero, realZero);
+  const pctTexto = semMeta ? '—' : `${Math.round(pct)}%`;
+  return `
+    <div class="meta-card${semMeta ? ' meta-card-neutro' : ''}" style="background:${cores.fundo}">
+      <div class="meta-ring" style="background:conic-gradient(${cores.anel} ${pctClamped}%, var(--border) 0)">
+        <div class="meta-ring-inner" style="color:${cores.anel}">${pctTexto}</div>
+      </div>
+      <div class="meta-card-body">
+        <div class="meta-card-titulo" title="${escAttr(l.cat)}">${escAttr(l.cat)}</div>
+        <div class="meta-card-linha">Real: <b>${fmtR(l.realizado)}</b></div>
+        <div class="meta-card-linha">Meta:
+          <input type="text" inputmode="numeric" class="metas-input-valor meta-card-input" data-cat="${escAttr(l.cat)}" data-receita="${isReceita?1:0}" data-meta-inicial="${l.meta}" ${isPlan?'':'disabled'}>
+          ${isPlan && l.manual ? `<button class="metas-reset-btn" data-cat="${escAttr(l.cat)}" title="Voltar para o valor automático">↺</button>` : ''}
+        </div>
+        ${l.manual ? `<div class="meta-card-badge">🔒 manual</div>` : ''}
+        ${semMeta ? `<div class="meta-card-aviso">⚠ sem meta cadastrada</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function _metasSecaoHtml(titulo, linhas, isReceita, isPlan) {
+  const cor = isReceita ? 'var(--teal)' : 'var(--orange)';
+  const cardsHtml = linhas.map(l => _metaCardHtml(l, isReceita, isPlan)).join('');
+  return `
+    <div class="card-top-gap">
+      <div class="card-title" style="color:${cor};margin-bottom:12px;font-size:15px;text-transform:none;letter-spacing:normal;font-weight:700">${titulo}</div>
+      <div class="metas-grid">${cardsHtml || '<div class="reg-empty" style="padding:20px">Nenhuma categoria.</div>'}</div>
+    </div>`;
+}
+
 function renderBudgetScreen() {
   if (!STATE.DATA) return;
+  const isPlan = STATE.MODO === 'planejador';
 
-  // Invalida o cache de realizado a cada render — garante que dados atualizados
-  // (edição de registros, troca de arquivo) nunca mostrem valores stale,
-  // independente de qual caminho levou até esta função.
-  // O cache será reconstruído sob demanda por _buildRealizadoCache().
-  invalidateRealizadoCache();
+  document.getElementById('metasBaseCalculo').value = STATE.METAS.baseCalculo;
+  document.getElementById('metasOrdenarPor').value  = STATE.METAS.ordenarPor;
+  document.getElementById('metasBaseCalculo').disabled = !isPlan;
+  document.getElementById('metasOrdenarPor').disabled  = !isPlan;
 
-  if (!STATE.BUDGET) {
-    document.getElementById('budgetKpis').innerHTML = '';
-    document.getElementById('budgetContent').innerHTML = `
-      <div class="bud-empty-state">
-        <div class="bud-empty-icon">🎯</div>
-        <div class="bud-empty-title">Nenhum orçamento encontrado</div>
-        <div class="bud-empty-desc">
-          O arquivo carregado não possui uma aba de orçamento.<br>
-          Para habilitar esta tela, adicione uma aba chamada <strong>ORÇAMENTO</strong> (ou <em>orç</em>, <em>budget</em>, <em>meta</em>) à sua planilha Excel.
-        </div>
-      </div>`;
-    return;
-  }
+  const meses = getMesesParaBase(STATE.METAS.baseCalculo);
+  const catsDespesa = Object.keys(TREE.GASTOS || {});
+  const catsReceita = Object.keys(TREE.GANHOS || {});
 
-  buildBudgetYearButtons();
-  renderBudgetKPIs();
+  const montarLinhas = (cats, isReceita) => cats.map(cat => ({
+    cat,
+    meta: getMetaCategoria(cat, isReceita),
+    realizado: calcularMediaCategoria(cat, isReceita, meses),
+    manual: !!(STATE.METAS.valores[cat] && STATE.METAS.valores[cat].manual),
+  }));
 
-  const nMonths = getVisibleMonthCount();
+  const linhasDespesa = montarLinhas(catsDespesa, false);
+  const linhasReceita = montarLinhas(catsReceita, true);
 
-  // Coleta dados de todas as seções para alertas e panorama
-  const allSections = [
-    ...INCOME_PARENTS.filter(s => STATE.BUDGET.sections[s]).map(s => ({ name:s, isIncome:true })),
-    ...EXPENSE_PARENTS.filter(s => STATE.BUDGET.sections[s]).map(s => ({ name:s, isIncome:false }))
-  ].map(({ name, isIncome }) => {
-    const meta = (STATE.BUDGET.sections[name].metaMensal || 0) * nMonths;
-    const real = calcRealizadoCat(name, isIncome);
-    const pct  = meta > 0 ? (real/meta*100) : (real>0?999:0);
-    return { name, isIncome, meta, real, pct };
-  }).filter(s => s.meta > 0 || s.real > 0);
+  const ordenar = (arr) => arr.sort((a, b) =>
+    STATE.METAS.ordenarPor === 'meta' ? b.meta - a.meta : b.realizado - a.realizado);
+  ordenar(linhasDespesa);
+  ordenar(linhasReceita);
 
-  const alerts = allSections.filter(s =>
-    (!s.isIncome && s.pct > 100) || (s.isIncome && s.meta > 0 && s.pct < 70)
-  ).sort((a,b) => Math.abs(b.real - b.meta) - Math.abs(a.real - a.meta));
+  const somaMeta = (arr) => arr.reduce((s,l) => s+l.meta, 0);
+  const somaReal = (arr) => arr.reduce((s,l) => s+l.realizado, 0);
 
-  const incCards = allSections.filter(s =>  s.isIncome);
-  const expCards = allSections.filter(s => !s.isIncome);
+  document.getElementById('budgetKpis').innerHTML = `
+    <div class="kpi-card"><div class="kpi-label"><span class="kpi-dot" style="background:var(--teal)"></span>Meta Receitas / mês</div><div class="kpi-value" style="color:var(--teal)">${fmtR(somaMeta(linhasReceita))}</div></div>
+    <div class="kpi-card"><div class="kpi-label"><span class="kpi-dot" style="background:var(--teal)"></span>Realizado Receitas / mês</div><div class="kpi-value" style="color:var(--teal)">${fmtR(somaReal(linhasReceita))}</div></div>
+    <div class="kpi-card"><div class="kpi-label"><span class="kpi-dot" style="background:var(--orange)"></span>Meta Despesas / mês</div><div class="kpi-value" style="color:var(--orange)">${fmtR(somaMeta(linhasDespesa))}</div></div>
+    <div class="kpi-card"><div class="kpi-label"><span class="kpi-dot" style="background:var(--orange)"></span>Realizado Despesas / mês</div><div class="kpi-value" style="color:var(--orange)">${fmtR(somaReal(linhasDespesa))}</div></div>`;
 
-  // Monta os blocos delegando para sub-funções — cada uma é responsável por um bloco
-  let html = '';
-  html += _budAlertsHtml(alerts);
-  html += _budCatGridHtml(incCards, true,  '💵 Receitas');
-  html += _budCatGridHtml(expCards, false, '💸 Despesas');
+  document.getElementById('budgetContent').innerHTML =
+    _metasSecaoHtml('💵 Receitas', linhasReceita, true, isPlan) +
+    _metasSecaoHtml('💸 Despesas', linhasDespesa, false, isPlan);
 
-  // Detalhamento por seção (cards colapsáveis)
-  html += `<div class="bud-section-header" style="margin-top:8px;margin-bottom:4px">🔍 Detalhamento por Categoria</div>`;
-  INCOME_PARENTS.forEach(sec => {
-    if (STATE.BUDGET.sections[sec]) html += renderBudgetSection(sec, true, false, sec);
+  document.querySelectorAll('.metas-input-valor').forEach(inp => {
+    _setValorMoedaInput(inp, parseFloat(inp.dataset.metaInicial) || 0);
+    inp.addEventListener('input', () => _aplicarMascaraMoeda(inp));
+    inp.addEventListener('change', () => {
+      salvarMetaManual(inp.dataset.cat, inp.dataset.receita === '1', parseFloat(inp.dataset.valor || '0') || 0);
+    });
   });
-  EXPENSE_PARENTS.forEach(sec => {
-    if (STATE.BUDGET.sections[sec]) html += renderBudgetSection(sec, false, false, sec);
+  document.querySelectorAll('.metas-reset-btn').forEach(btn => {
+    btn.addEventListener('click', () => resetarMetaAutomatica(btn.dataset.cat));
   });
-
-  if (!html.includes('bud-card')) {
-    html += `<div class="bud-no-section">Nenhuma seção de orçamento encontrada.</div>`;
-  }
-
-  const budContent = document.getElementById('budgetContent');
-  budContent.innerHTML = html;
-
-  // Delegação de eventos — evita onclick com strings dinâmicas (risco de apóstrofes em nomes)
-  budContent.addEventListener('click', e => {
-    // Clique em linha de subcategoria (tr) ou no ícone 🔍 dentro dela
-    const icon = e.target.closest('[data-drill-subcat-icon]');
-    const row  = e.target.closest('[data-drill-subcat]');
-    if (icon) { e.stopPropagation(); }
-    if (row) {
-      drillBudgetSubcat(row.dataset.label, row.dataset.parent, row.dataset.income === 'true');
-      return;
-    }
-    // Clique em mini-card de categoria
-    const card = e.target.closest('[data-drill-cat]');
-    if (card) {
-      drillBudgetCat(card.dataset.cat, card.dataset.income === 'true');
-    }
-    // Clique em linha do panorama de despesas
-    const chartRow = e.target.closest('[data-bud-section]');
-    if (chartRow) {
-      scrollToBudSection(chartRow.dataset.budSection);
-    }
-  }, { once: false });
 }
+
 
 function scrollToBudSection(name) {
   // Acha o card correspondente pelo texto do título e expande + rola até ele
@@ -4969,6 +5568,72 @@ function parseReservaSheet(wb) {
   }
 }
 
+// ── Instituições (contas e cartões do cliente) ───────────────────────────────
+const INST_TIPOS = ['Conta corrente', 'Cartão de crédito', 'Poupança', 'Outro'];
+function _instLimpa(lista) {
+  const out = [];
+  (Array.isArray(lista) ? lista : []).forEach(i => {
+    const nome = String((i && i.nome) || '').trim();
+    if (!nome || out.some(x => _semAcento(x.nome) === _semAcento(nome))) return;
+    const tipo = INST_TIPOS.find(t => _semAcento(t) === _semAcento((i && i.tipo) || '')) || 'Outro';
+    out.push({ nome, tipo });
+  });
+  return out;
+}
+function parseInstituicoesSheet(wb) {
+  const nome = wb.SheetNames.find(n => _semAcento(n) === 'instituicoes');
+  if (!nome) return [];
+  try {
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[nome], { header: 1, defval: null });
+    return _instLimpa(rows.slice(1).map(r => ({ nome: r[0], tipo: r[1] })));
+  } catch { return []; }
+}
+function _origemManual(inst) { return inst ? `${ARQUIVO_MANUAL} – ${inst}` : ARQUIVO_MANUAL; }
+function _ehCartaoOrigem(arq) {
+  if (/cart[aã]o|fatura/i.test(arq || '')) return true;
+  return (STATE.INSTITUICOES || []).some(i => i.tipo === 'Cartão de crédito' && (arq || '').includes(i.nome));
+}
+function abrirModalInstituicoes() {
+  if (!STATE.DATA) return;
+  if (!STATE.INSTITUICOES) STATE.INSTITUICOES = [];
+  document.getElementById('instNome').value = '';
+  renderListaInstituicoes();
+  document.getElementById('instOverlay').classList.add('open');
+}
+function fecharModalInstituicoes() { document.getElementById('instOverlay').classList.remove('open'); }
+function renderListaInstituicoes() {
+  const el = document.getElementById('instLista');
+  const l = STATE.INSTITUICOES || [];
+  el.innerHTML = l.length ? l.map((i, k) => `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border)"><span><strong>${_escHtml(i.nome)}</strong> <span style="font-size:11px;color:var(--mgray)">· ${_escHtml(i.tipo)}</span></span><button class="reg-btn reg-btn-secondary" style="padding:3px 10px" onclick="removerInstituicao(${k})">Remover</button></div>`).join('')
+    : '<div style="padding:16px;text-align:center;font-size:13px;color:var(--mgray)">Nenhuma instituição cadastrada.</div>';
+}
+function salvarInstituicao() {
+  const nome = document.getElementById('instNome').value.trim();
+  const tipo = document.getElementById('instTipo').value;
+  if (!nome) { showToast('Informe o nome da instituição.', 'erro'); return; }
+  if (STATE.INSTITUICOES.some(x => _semAcento(x.nome) === _semAcento(nome))) { showToast('Esta instituição já está cadastrada.', 'erro'); return; }
+  STATE.INSTITUICOES.push({ nome, tipo });
+  STATE._instAlterada = true; STATE._hasUnsavedChanges = true;
+  atualizarIndicadorAlteracoes(); _atualizaBtnCorrecoes();
+  document.getElementById('instNome').value = '';
+  renderListaInstituicoes();
+}
+function removerInstituicao(k) {
+  const i = STATE.INSTITUICOES[k]; if (!i) return;
+  showConfirm(`Remover "${i.nome}" da lista? Lançamentos já feitos com ela continuam como estão.`, () => {
+    STATE.INSTITUICOES.splice(k, 1);
+    STATE._instAlterada = true; STATE._hasUnsavedChanges = true;
+    atualizarIndicadorAlteracoes(); _atualizaBtnCorrecoes();
+    renderListaInstituicoes();
+  });
+}
+function _popularInstituicoesModal() {
+  const sel = document.getElementById('editInstituicao');
+  sel.innerHTML = '<option value="">— Não informar —</option>' +
+    (STATE.INSTITUICOES || []).map(i => `<option value="${escAttr(i.nome)}">${_escHtml(i.nome)} (${_escHtml(i.tipo)})</option>`).join('');
+  document.getElementById('editInstHint').style.display = (STATE.INSTITUICOES || []).length ? 'none' : '';
+}
+
 // Lê a aba "Ativos Reserva" de um workbook (posição atual + histórico superado),
 // gravada por uma exportação anterior deste dashboard. Se não existir, começa vazio.
 function parseAtivosReservaSheet(wb) {
@@ -5014,6 +5679,38 @@ function parseAtivosReservaSheet(wb) {
   } catch (e) {
     console.error('Erro ao ler aba "Ativos Reserva":', e);
     return [];
+  }
+}
+
+// Lê a aba "Metas Orçamento" de um workbook — só guarda as metas travadas
+// manualmente (as automáticas são recalculadas sempre a partir dos dados).
+function parseMetasSheet(wb) {
+  const nomeAba = wb.SheetNames.find(s => s.toLowerCase().includes('metas'));
+  if (!nomeAba) return defaultMetas();
+  try {
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[nomeAba], { header: 1, defval: null });
+    const cfg = defaultMetas();
+    let tabelaStart = -1;
+    rows.forEach((row, i) => {
+      const label = String(row[0]||'').trim().toLowerCase();
+      if (label === 'base de cálculo' && row[1] != null) cfg.baseCalculo = String(row[1]).trim();
+      else if (label === 'ordenar por' && row[1] != null) cfg.ordenarPor = String(row[1]).trim();
+      else if (label === 'categoria' && tabelaStart === -1) tabelaStart = i;
+    });
+    if (tabelaStart > -1) {
+      for (let i = tabelaStart + 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row[0] == null) continue;
+        cfg.valores[String(row[0]).trim()] = {
+          valor: parseFloat(row[2]) || 0,
+          manual: String(row[3]||'').trim().toLowerCase() === 'sim',
+        };
+      }
+    }
+    return cfg;
+  } catch (e) {
+    console.error('Erro ao ler aba "Metas Orçamento":', e);
+    return defaultMetas();
   }
 }
 
@@ -5740,8 +6437,8 @@ function getRegistrosFiltrados() {
   const recurso = document.getElementById('regRecurso')?.value || '';
   const dataIni = document.getElementById('regDataIni')?.value || '';
   const dataFim = document.getElementById('regDataFim')?.value || '';
-  const valMin  = parseFloat(document.getElementById('regValMin')?.value) || 0;
-  const valMax  = parseFloat(document.getElementById('regValMax')?.value) || Infinity;
+  const valMin  = parseFloat(document.getElementById('regValMin')?.dataset.valor) || 0;
+  const valMax  = parseFloat(document.getElementById('regValMax')?.dataset.valor) || Infinity;
 
   // Filtro por botões de Período (Ano/Mês) — soma-se aos campos de data digitados (AND).
   // Reaproveita o mesmo núcleo (_calcVisibleIdxs) usado no Dashboard/Orçamento/Investimentos.
@@ -5751,14 +6448,16 @@ function getRegistrosFiltrados() {
     regMonthKeys = new Set(idxs.map(i => STATE.DATA.monthKeys[i]));
   }
 
-  return STATE.DATA.transactions.filter(t => {
+  const _fonte = STATE.regModoPendentes ? (STATE.PENDENTES || []) : STATE.DATA.transactions;
+  return _fonte.filter(t => {
+    if (STATE.regModoTransf && t.tipo !== 'Outro') return false;
     if (tipo    && t.tipo   !== tipo)   return false;
     if (subcat  && t.subcat !== subcat) return false;
     if (cat     && t.cat    !== cat)    return false;
     if (recurso && (t.recurso||'') !== recurso) return false;
     if (valMin > 0 && t.valor < valMin) return false;
     if (valMax < Infinity && t.valor > valMax) return false;
-    if (regMonthKeys) {
+    if (regMonthKeys && !STATE.regModoPendentes) {
       const mk = t.date instanceof Date
         ? `${String(t.date.getMonth()+1).padStart(2,'0')}/${t.date.getFullYear()}`
         : null;
@@ -5793,6 +6492,144 @@ function sortReg(col) {
 // Debounce para campos de texto dos filtros de Registros.
 // Evita reconstruir toda a tabela a cada tecla digitada.
 let _regDebounceTimer = null;
+// ── Modos da tela Registros: Pendentes e Transferências ─────────────────────
+function _escHtml(x) { return escAttr(x); }
+function _obsHtml(t) {
+  let h = '';
+  if (t.observacao) h += `<div class="reg-obs">📝 ${_escHtml(t.observacao)}</div>`;
+  if (STATE.regModoPendentes && t.justificativa) h += `<div class="reg-obs reg-just">💡 ${_escHtml(t.justificativa)}</div>`;
+  return h;
+}
+function _regSummaryHtml(rows, totalG, totalD, saldo) {
+  const n = rows.length, pl = n !== 1;
+  const cnt = `<div class="reg-summary-item"><strong>${n}</strong> registro${pl?'s':''} encontrado${pl?'s':''}</div>`;
+  if (STATE.regModoPendentes) {
+    const tot = rows.reduce((a, t) => a + t.valor, 0);
+    const salvar = STATE.MODO === 'planejador' ? 'baixe o XLSX (⬇ Exportar XLSX)' : 'envie as correções (📤 Enviar Correções)';
+    return `<div class="reg-banner">⚠ Registros "${STATUS_PEND}" ficam <strong>fora de todos os números</strong> até serem reclassificados. Escolha o Tipo de cada um (✏️) ou marque vários e use "Reclassificar selecionados". Ao confirmar, o registro passa a "${STATUS_OK}". Depois, ${salvar} — senão a reclassificação se perde ao fechar.</div>${cnt}<div class="reg-summary-item">Valor somado (sem sinal): <strong>${fmtR(tot)}</strong></div>`;
+  }
+  if (STATE.regModoTransf) {
+    const sai = rows.filter(t => t.origemBase === 'DESPESA').reduce((a, t) => a + t.valor, 0);
+    const ent = rows.filter(t => t.origemBase === 'RECEITA').reduce((a, t) => a + t.valor, 0);
+    const dif = ent - sai;
+    return `<div class="reg-banner" style="background:#f1f5f9;border-color:#cbd5e1;color:#334155">↔ Transferências e movimentos neutros (Origem OUTRO). Não entram em receitas nem despesas. Se algum estiver errado, reclassifique pelo Tipo.</div>${cnt}
+      <div style="display:flex;gap:20px;flex-wrap:wrap">
+        <div class="reg-summary-item">Saídas: <strong style="color:var(--orange)">${fmtR(sai)}</strong></div>
+        <div class="reg-summary-item">Entradas: <strong style="color:var(--teal)">${fmtR(ent)}</strong></div>
+        <div class="reg-summary-item">Diferença: <strong style="color:${Math.abs(dif)<0.005?'var(--mgray)':(dif>0?'var(--teal)':'var(--orange)')}">${fmtR(Math.abs(dif))}</strong></div>
+      </div>`;
+  }
+  return `${cnt}
+    <div style="display:flex;gap:20px;flex-wrap:wrap">
+      ${totalG>0?`<div class="reg-summary-item">Receitas: <strong style="color:var(--teal)">${fmtR(totalG)}</strong></div>`:''}
+      ${totalD>0?`<div class="reg-summary-item">Despesas: <strong style="color:var(--orange)">${fmtR(totalD)}</strong></div>`:''}
+      ${totalG>0&&totalD>0?`<div class="reg-summary-item">Saldo: <strong style="color:${saldo>=0?'var(--teal)':'var(--orange)'}">${fmtR(Math.abs(saldo))}</strong></div>`:''}
+    </div>`;
+}
+function _atualizaBtnsModo() {
+  const nP = (STATE.PENDENTES || []).length;
+  const nT = STATE.DATA ? STATE.DATA.transactions.filter(t => t.tipo === 'Outro').length : 0;
+  const bp = document.getElementById('btnPendentes'), bt = document.getElementById('btnTransf');
+  if (bp) {
+    bp.style.display = (nP > 0 || STATE.regModoPendentes) ? '' : 'none';
+    bp.textContent = STATE.regModoPendentes ? '← Voltar aos registros' : `⚠ Pendentes (${nP})`;
+    bp.classList.toggle('modo-ativo', !!STATE.regModoPendentes);
+  }
+  if (bt) {
+    bt.style.display = STATE.regModoPendentes ? 'none' : '';
+    bt.textContent = STATE.regModoTransf ? '← Todos os registros' : `↔ Transferências (${nT})`;
+    bt.classList.toggle('modo-ativo', !!STATE.regModoTransf);
+  }
+}
+function alternarModoPendentes() {
+  STATE.regModoPendentes = !STATE.regModoPendentes;
+  STATE.regModoTransf = false;
+  STATE.regSelecionados.clear();
+  renderRegistros();
+}
+function alternarModoTransf() {
+  STATE.regModoTransf = !STATE.regModoTransf;
+  STATE.regModoPendentes = false;
+  STATE.regSelecionados.clear();
+  renderRegistros();
+}
+// Tipos permitidos para um conjunto de registros: os da Origem Base comum + os de OUTRO.
+// Seleção mista (RECEITA e DESPESA juntas) só pode ir para tipos de OUTRO.
+function _tiposPermitidos(bases) {
+  const uniq = [...new Set(bases)];
+  const out = [];
+  const add = (origem, real) => {
+    for (const [cat, tipos] of Object.entries(TREE[origem] || {})) tipos.forEach(t => out.push({ tipo: t, cat, origemReal: real }));
+  };
+  if (uniq.length === 1) add(uniq[0] === 'RECEITA' ? 'GANHOS' : 'GASTOS', uniq[0] === 'RECEITA' ? 'GANHOS' : 'GASTOS');
+  add('OUTRO', 'OUTRO');
+  out.sort((a, b) => a.tipo.localeCompare(b.tipo, 'pt-BR'));
+  return out;
+}
+function _optionsTipos(lista) {
+  return '<option value="">Selecione…</option>' + lista.map(i =>
+    `<option value="${escAttr(i.tipo)}" data-cat="${escAttr(i.cat)}" data-origem-real="${i.origemReal}">${escAttr(i.tipo)}</option>`).join('');
+}
+// Passa registros de Pendentes para os números (status Ok - Confere).
+// Diálogo simples com dois botões (usado nos avisos de classificação)
+function _mostrarDialogo({ titulo, texto, sim, nao, onSim, onNao }) {
+  const ov = document.getElementById('dialogoOverlay');
+  document.getElementById('dialogoTitulo').textContent = titulo;
+  document.getElementById('dialogoTexto').innerHTML = texto;
+  const bs = document.getElementById('dialogoSim'), bn = document.getElementById('dialogoNao');
+  bs.textContent = sim; bn.textContent = nao;
+  const fecha = () => ov.classList.remove('open');
+  bs.onclick = () => { fecha(); if (onSim) onSim(); };
+  bn.onclick = () => { fecha(); if (onNao) onNao(); };
+  ov.classList.add('open');
+}
+// Cliente terminou de classificar tudo: oferece gerar o arquivo para o planejador
+function _checaFimPendentes() {
+  if (STATE.MODO !== 'cliente' || !STATE.DATA || STATE._fimPendMostrado) return;
+  if (!(STATE._pendInicial > 0) || (STATE.PENDENTES || []).length) return;
+  if (document.getElementById('editOverlay') && document.getElementById('editOverlay').classList.contains('open')) return;
+  STATE._fimPendMostrado = true;
+  _mostrarDialogo({
+    titulo: '✅ Tudo classificado!',
+    texto: 'Você classificou todos os registros que estavam pendentes.<br><br>Quer gerar agora o arquivo para enviar ao seu planejador?',
+    sim: 'Gerar arquivo para envio', nao: 'Ainda não',
+    onSim: () => exportarCorrecoes(),
+  });
+}
+function _promoverPendentes(lista) {
+  const set = new Set(lista);
+  STATE.PENDENTES = (STATE.PENDENTES || []).filter(t => !set.has(t));
+  lista.forEach(t => { t.status = STATUS_OK; t._edited = true; t._editedAt = t._editedAt || new Date(); STATE.DATA.transactions.push(t); });
+  setTimeout(_checaFimPendentes, 700);
+}
+// Histórico na Justificativa: quando o CLIENTE altera ou inclui um registro, o fato fica escrito no próprio registro
+function _snapEdicao(t) {
+  return { tipo: t.tipo, cat: t.cat, subcat: t.subcat, valor: t.valor, desc: t.desc, date: t.date, status: t.status };
+}
+function _carimboCliente() {
+  const d = new Date();
+  return d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+function _addJustificativa(t, linha) {
+  t.justificativa = (t.justificativa ? t.justificativa.replace(/\s+$/, '') + '\n' : '') + linha;
+}
+function _registraAlteracaoCliente(t, a) {
+  if (STATE.MODO !== 'cliente' || !a) return;
+  const m = [];
+  if (a.tipo !== t.tipo) m.push(`tipo de ${a.tipo} para ${t.tipo}`);
+  if (a.cat !== t.cat) m.push(`categoria de ${a.cat || '—'} para ${t.cat || '—'}`);
+  if (a.subcat !== t.subcat) m.push(`subcategoria de ${a.subcat || '—'} para ${t.subcat || '—'}`);
+  if (a.valor !== t.valor) m.push(`valor de ${fmtR(a.valor)} para ${fmtR(t.valor)}`);
+  if (a.desc !== t.desc) m.push(`descrição de "${a.desc}" para "${t.desc}"`);
+  if (toLocalDateStr(a.date) !== toLocalDateStr(t.date)) m.push(`data de ${a.date.toLocaleDateString('pt-BR')} para ${t.date.toLocaleDateString('pt-BR')}`);
+  const veioPend = a.status === STATUS_PEND && !m.length;
+  if (!m.length && !veioPend) return;
+  _addJustificativa(t, `Campo alterado pelo cliente em ${_carimboCliente()}: ${m.length ? m.join('; ') : 'classificação confirmada pelo cliente'}.`);
+}
+function _logExclusao(t) {
+  STATE.EXCLUIDOS.push({ t, dh: new Date(), por: STATE.MODO });
+  setTimeout(_checaFimPendentes, 700);
+}
 function renderRegistrosDebounced() {
   clearTimeout(_regDebounceTimer);
   _regDebounceTimer = setTimeout(renderRegistros, 180);
@@ -5807,13 +6644,8 @@ function renderRegistros() {
   const totalD = rows.filter(t=>t.tipo==='Gasto').reduce((s,t)=>s+t.valor,0);
   const saldo  = totalG - totalD;
   const summary = document.getElementById('regSummary');
-  if (summary) summary.innerHTML = `
-    <div class="reg-summary-item"><strong>${rows.length}</strong> registro${rows.length!==1?'s':''} encontrado${rows.length!==1?'s':''}</div>
-    <div style="display:flex;gap:20px;flex-wrap:wrap">
-      ${totalG>0?`<div class="reg-summary-item">Receitas: <strong style="color:var(--teal)">${fmtR(totalG)}</strong></div>`:''}
-      ${totalD>0?`<div class="reg-summary-item">Despesas: <strong style="color:var(--orange)">${fmtR(totalD)}</strong></div>`:''}
-      ${totalG>0&&totalD>0?`<div class="reg-summary-item">Saldo: <strong style="color:${saldo>=0?'var(--teal)':'var(--orange)'}">${fmtR(Math.abs(saldo))}</strong></div>`:''}
-    </div>`;
+  if (summary) summary.innerHTML = _regSummaryHtml(rows, totalG, totalD, saldo);
+  _atualizaBtnsModo();
 
   // Tabela
   const tbody = document.getElementById('regTableBody');
@@ -5822,7 +6654,7 @@ function renderRegistros() {
   const hl = text => highlightText(text, re);
 
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="${STATE.MODO==='planejador'?9:8}" class="reg-empty"><div class="reg-empty-icon">🔍</div>Nenhum registro encontrado.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${9}" class="reg-empty"><div class="reg-empty-icon">🔍</div>Nenhum registro encontrado.</td></tr>`;
     return;
   }
 
@@ -5839,33 +6671,35 @@ function renderRegistros() {
     const recursoClean = (t.recurso||'').replace(/^\[.*?\]\s*/,'') || '—';
     const recursoFull  = t.recurso || '—';
     return `<tr>
-      ${STATE.MODO === 'planejador' ? `<td><input type="checkbox" class="reg-row-chk" data-txidx="${txIdx}" ${STATE.regSelecionados.has(txIdx)?'checked':''} onchange="toggleRegSelecionado(${txIdx}, this.checked)"></td>` : ''}
+      ${true ? `<td><input type="checkbox" class="reg-row-chk" data-txidx="${txIdx}" ${STATE.regSelecionados.has(txIdx)?'checked':''} onchange="toggleRegSelecionado(${txIdx}, this.checked)"></td>` : ''}
       <td style="white-space:nowrap;font-family:'DM Mono',monospace;font-size:12px;color:var(--mgray)">${dateStr}</td>
-      <td style="max-width:280px">${hl(t.desc)}${t._edited && t._editedAt ? `<span class="edited-badge" title="Editado em ${t._editedAt.toLocaleString('pt-BR')}">✏ editado</span>` : ''}${t._addedManually ? `<span class="edited-badge" style="background:#0F6E5622;color:#0F6E56" title="Adicionado direto no dashboard — não existe na planilha original">➕ adicionado</span>` : ''}</td>
+      <td style="max-width:280px">${hl(t.desc)}${_obsHtml(t)}${t._edited && t._editedAt ? `<span class="edited-badge" title="Editado em ${t._editedAt.toLocaleString('pt-BR')}">✏ editado</span>` : ''}${t._addedManually ? `<span class="edited-badge" style="background:#0F6E5622;color:#0F6E56" title="Adicionado direto no dashboard — não existe na planilha original">➕ adicionado${t._addedBy==='cliente' ? ' (cliente)' : ''}</span>` : ''}</td>
       <td><span class="reg-type-badge" style="background:${badgeBg};color:${badgeClr}">${badgeTxt}</span></td>
       <td><span style="font-size:12px;font-weight:600;color:${catColor}">${hl(t.cat)}</span></td>
       <td class="reg-subcat-cell">${hl(t.subcat)}</td>
       <td class="txt-12-truncate" title="${escAttr(recursoFull)}">${hl(recursoClean)}</td>
       <td style="text-align:right;font-weight:700;font-family:'DM Mono',monospace;color:${valColor};white-space:nowrap">${fmtR(t.valor)}</td>
       <td style="text-align:center;white-space:nowrap">
-        <button class="reg-btn-edit" onclick="STATE._drillReopenFn=null;openEditModal(${txIdx})">✏️</button>
-        ${STATE.MODO === 'planejador' ? `<button class="reg-btn-delete" onclick="deleteRegistro(${txIdx})">🗑️</button>` : ''}
+        <button class="reg-btn-edit" onclick="STATE._drillReopenFn=null;openEditModal(${txIdx}, ${!!STATE.regModoPendentes})">✏️</button>
+        <button class="reg-btn-delete" onclick="deleteRegistro(${txIdx})">🗑️</button>
       </td>
     </tr>`;
   }).join('');
 
   atualizarToolbarBulkReg();
+  setTimeout(_checaFimPendentes, 350);
 }
 
 function limparFiltrosReg() {
   ['regSearch','regDataIni','regDataFim','regValMin','regValMax'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.value='';
+    const el = document.getElementById(id); if(el) { el.value=''; if (el.dataset) el.dataset.valor = '0'; }
   });
   ['regTipo','regSubcat','regCat','regRecurso'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value='';
   });
   STATE.regActiveYear = 'all'; STATE.regActiveMonth = 'all'; STATE.regActiveMonthTo = null;
   STATE.regSelecionados.clear();
+  STATE.regModoPendentes = false; STATE.regModoTransf = false;
   buildRegYearButtons();
   populateRegSubcatAndCat();
   renderRegistros();
@@ -5879,52 +6713,72 @@ function exportarRegistrosXLSX() {
   try {
     if (!STATE._hasUnsavedChanges) { showToast('Nenhuma alteração para exportar.', 'info'); return; }
 
-    // Usa os metadados capturados no momento do parse — sem precisar do binário em memória.
-    const { sheetName, headerRow, cols, budgetSheet, budgetSheetName } = STATE._exportMeta;
+    // Aba "Classificação" no formato novo: 12 colunas fixas, valores concretos (sem
+    // fórmulas), Origem Base oculta. Os registros pendentes (Analisar/Classificar)
+    // também são gravados — senão se perderiam ao reabrir o arquivo.
+    const sheetName = 'Classificação';
+    const todos = [...STATE.DATA.transactions, ...(STATE.PENDENTES || [])];
+    const ordenados = todos.map((t, i) => ({ t, i })).sort((x, y) => {
+      const cx = (x.t.dataCaixa || x.t.date).getTime(), cy = (y.t.dataCaixa || y.t.date).getTime();
+      if (cx !== cy) return cx - cy;
+      const px = (x.t.dataCompetencia || x.t.date).getTime(), py = (y.t.dataCompetencia || y.t.date).getTime();
+      if (px !== py) return px - py;
+      return x.i - y.i;
+    }).map(o => o.t);
 
-    // Monta o cabeçalho a partir do headerRow original (preserva nomes exatos)
-    const header = headerRow.filter(Boolean).map(h => String(h).trim());
+    const header = CLASSIF_COLUNAS.slice();
+    const dataRows = ordenados.map(tx => [
+      _serialExcel(tx.dataCompetencia || tx.date),
+      _serialExcel(tx.dataCaixa || tx.date),
+      tx.arquivoOrigem || (tx._addedManually ? ARQUIVO_MANUAL : ''),
+      tx.desc,
+      tx.observacao || '',
+      tx.valor,
+      tx.tipo === 'Gasto' ? 'DESPESA' : (tx.tipo === 'Ganho' ? 'RECEITA' : 'OUTRO'),
+      tx.origemBase || (tx.tipo === 'Ganho' ? 'RECEITA' : 'DESPESA'),
+      nomeArvore('cat', tx.cat),
+      nomeArvore('tipo', tx.subcat),
+      tx.status === STATUS_PEND ? STATUS_PEND : STATUS_OK,
+      tx.justificativa || '',
+    ]);
 
-    // Índice nome-coluna → posição no array de saída
-    const ci = {};
-    header.forEach((h, i) => { ci[h] = i; });
-
-    // Mapeia os campos do dashboard para os nomes de coluna do Excel original
-    const colGasto   = header.find(h => h.toLowerCase().includes('gasto') || h.toLowerCase().includes('ganho')) || header[0];
-    const colDesc    = cols.colDesc;
-    const colData    = cols.colData;
-    const colSubcat  = cols.colSubcat;
-    const colValor   = cols.colValor;
-    const colCat     = cols.colCat;
-    const colRecurso = cols.colRecurso;
-
-    // Constrói as linhas de dados a partir do array de transações
-    const dataRows = STATE.DATA.transactions.map(tx => {
-      const row = new Array(header.length).fill(null);
-      if (colGasto  && ci[colGasto]  != null) row[ci[colGasto]]  = tx.tipo;
-      if (colDesc   && ci[colDesc]   != null) row[ci[colDesc]]   = tx.desc;
-      if (colData   && ci[colData]   != null) row[ci[colData]]   = tx.date instanceof Date
-        ? String(tx.date.getDate()).padStart(2,'0') + '/' +
-          String(tx.date.getMonth()+1).padStart(2,'0') + '/' +
-          tx.date.getFullYear()
-        : '';
-      if (colSubcat && ci[colSubcat] != null) row[ci[colSubcat]] = tx.subcat;
-      if (colValor  && ci[colValor]  != null) row[ci[colValor]]  = tx.valor;
-      if (colCat    && ci[colCat]    != null) row[ci[colCat]]    = tx.cat;
-      if (colRecurso&& ci[colRecurso]!= null) row[ci[colRecurso]]= (tx.recurso||'').replace(/^\[.*?\]\s*/,'');
-      return row;
-    });
-
-    // Monta a sheet: cabeçalho na linha 0, dados a partir da linha 1
-    const wsOut = XLSX.utils.aoa_to_sheet([header, ...dataRows]);
+    const wsOut = XLSX.utils.aoa_to_sheet([header, ...dataRows], { cellDates: true });
+    for (let r = 2; r <= dataRows.length + 1; r++) {
+      ['A', 'B'].forEach(c => { const cell = wsOut[c + r]; if (cell) cell.z = 'dd/mm/yyyy'; });
+      const v = wsOut['F' + r]; if (v) v.z = '0.00';
+    }
+    const cols = []; cols[7] = { hidden: true };  // coluna H (Origem Base) oculta
+    wsOut['!cols'] = cols;
+    wsOut['!autofilter'] = { ref: `A1:L${dataRows.length + 1}` };
 
     // Monta o workbook de saída com apenas as abas necessárias
     const wbOut = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wbOut, wsOut, sheetName);
 
-    // Inclui a aba de orçamento se existir (já capturada no parse)
-    if (budgetSheet && budgetSheetName) {
-      XLSX.utils.book_append_sheet(wbOut, budgetSheet, budgetSheetName);
+    // Histórico de exclusões (cliente e planejador), com data/hora e quem excluiu.
+    if ((STATE.EXCLUIDOS || []).length) {
+      const exRows = STATE.EXCLUIDOS.map(e => {
+        const tx = e.t;
+        return [
+          _serialExcel(tx.dataCompetencia || tx.date), _serialExcel(tx.dataCaixa || tx.date),
+          tx.arquivoOrigem || (tx._addedManually ? ARQUIVO_MANUAL : ''),
+          tx.desc, tx.observacao || '', tx.valor,
+          tx.tipo === 'Gasto' ? 'DESPESA' : (tx.tipo === 'Ganho' ? 'RECEITA' : 'OUTRO'),
+          tx.origemBase || (tx.tipo === 'Ganho' ? 'RECEITA' : 'DESPESA'),
+          nomeArvore('cat', tx.cat), nomeArvore('tipo', tx.subcat),
+          tx.status === STATUS_PEND ? STATUS_PEND : STATUS_OK, tx.justificativa || '',
+          _serialExcel(e.dh, true), e.por === 'planejador' ? 'Planejador' : 'Cliente',
+        ];
+      });
+      const wsEx = XLSX.utils.aoa_to_sheet([[...CLASSIF_COLUNAS, 'Data/Hora da Exclusão', 'Excluído por'], ...exRows], { cellDates: true });
+      for (let r = 2; r <= exRows.length + 1; r++) {
+        ['A', 'B'].forEach(c => { const cell = wsEx[c + r]; if (cell) cell.z = 'dd/mm/yyyy'; });
+        const m = wsEx['M' + r]; if (m) m.z = 'dd/mm/yyyy hh:mm';
+        const v = wsEx['F' + r]; if (v) v.z = '0.00';
+      }
+      const colsEx = []; colsEx[7] = { hidden: true };
+      wsEx['!cols'] = colsEx;
+      XLSX.utils.book_append_sheet(wbOut, wsEx, 'Registros Excluídos');
     }
 
     // Grava a Reserva de Emergência sempre atualizada — é assim que a configuração
@@ -5956,6 +6810,27 @@ function exportarRegistrosXLSX() {
     const ativosWs = XLSX.utils.aoa_to_sheet(ativosAOA);
     XLSX.utils.book_append_sheet(wbOut, ativosWs, 'Ativos Reserva');
 
+    // Metas de Orçamento: só as travadas manualmente viram linha — as automáticas
+    // são recalculadas do zero a cada abertura, a partir dos dados mais recentes.
+    const metasAOA = [
+      ['Base de Cálculo', STATE.METAS.baseCalculo],
+      ['Ordenar Por', STATE.METAS.ordenarPor],
+      [],
+      ['Categoria','Tipo','Valor','Manual'],
+      ...Object.entries(STATE.METAS.valores).map(([cat, v]) => [
+        cat,
+        Object.prototype.hasOwnProperty.call(TREE.GANHOS||{}, cat) ? 'Receita' : 'Despesa',
+        v.valor,
+        v.manual ? 'Sim' : 'Não',
+      ]),
+    ];
+    const metasWs = XLSX.utils.aoa_to_sheet(metasAOA);
+    XLSX.utils.book_append_sheet(wbOut, metasWs, 'Metas Orçamento');
+
+    // Instituições do cliente (contas e cartões): aba própria, relida na abertura seguinte
+    const instAOA = [['Nome','Tipo'], ...(STATE.INSTITUICOES || []).map(i => [i.nome, i.tipo])];
+    XLSX.utils.book_append_sheet(wbOut, XLSX.utils.aoa_to_sheet(instAOA), 'Instituições');
+
     XLSX.writeFile(wbOut, (STATE.DATA.fileName||'dados').replace(/\.xlsx$/i,'') + '_editado.xlsx');
     STATE._hasUnsavedChanges = false;
     atualizarIndicadorAlteracoes();
@@ -5968,21 +6843,27 @@ function exportarRegistrosXLSX() {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function abrirModalNovoRegistro() {
-  if (!STATE.DATA || STATE.MODO !== 'planejador') return;
+  if (!STATE.DATA) return;
   STATE._novoRegistro = true;
+  STATE._editPend = false;
   STATE._editIdx = -1;
+  STATE._editBase = 'DESPESA';
+  { const o = document.querySelector('#editTipoMov option[value="Outro"]'); if (o) o.hidden = true; }
+  { const eo = document.getElementById('editObs'); if (eo) { eo.value = ''; eo.disabled = false; } }
+  document.getElementById('editTipoMov').disabled = false;
   const overlay = document.getElementById('editOverlay');
 
   document.getElementById('editModalTitle').textContent = '➕ Novo Registro';
   document.getElementById('editData').value = toLocalDateStr(new Date());
   document.getElementById('editDesc').value = '';
   document.getElementById('editTipoMov').value = 'Gasto';
-  document.getElementById('editValor').value = '';
+  _setValorMoedaInput(document.getElementById('editValor'), 0);
   populateEditSubcats('Gasto');
   document.getElementById('editSubcat').value = '';
   document.getElementById('editCat').value = '';
+  // Recurso agora vem de "Arquivo de Origem": lançamento manual grava "Lançamento manual"
+  _popularInstituicoesModal();
   document.getElementById('editRecursoField').style.display = '';
-  document.getElementById('editRecurso').value = '';
 
   // Novo registro sempre editável por completo, mesmo que o último modal aberto
   // tenha sido no modo cliente (campos ficam bloqueados só ao editar existentes)
@@ -5996,16 +6877,23 @@ function abrirModalNovoRegistro() {
   document.getElementById('editDesc').focus();
 }
 
-function openEditModal(txIdx) {
+function openEditModal(txIdx, ehPendente) {
   STATE._novoRegistro = false;
+  STATE._editPend = !!ehPendente;
   document.getElementById('editModalTitle').textContent = '✏️ Editar Registro';
   document.getElementById('editRecursoField').style.display = 'none';
-  if (!STATE.DATA || txIdx < 0 || txIdx >= STATE.DATA.transactions.length) return;
+  const arr = ehPendente ? (STATE.PENDENTES || []) : (STATE.DATA ? STATE.DATA.transactions : []);
+  if (!STATE.DATA || txIdx < 0 || txIdx >= arr.length) return;
   STATE._editIdx = txIdx;
-  const t = STATE.DATA.transactions[txIdx];
+  const t = arr[txIdx];
+  STATE._editBase = t.origemBase || (t.tipo === 'Ganho' ? 'RECEITA' : 'DESPESA');
   const overlay = document.getElementById('editOverlay');
+  const isCliente = STATE.MODO === 'cliente';
 
-  // Data
+  // Natureza de um registro existente: Receita/Despesa/Transferência; novas não permitem Transferência
+  const optOutro = document.querySelector('#editTipoMov option[value="Outro"]');
+  if (optOutro) optOutro.hidden = false;
+
   if (t.date instanceof Date) {
     const y = t.date.getFullYear();
     const m = String(t.date.getMonth()+1).padStart(2,'0');
@@ -6014,50 +6902,48 @@ function openEditModal(txIdx) {
   }
   document.getElementById('editDesc').value = t.desc || '';
   document.getElementById('editTipoMov').value = t.tipo;
-  document.getElementById('editValor').value = t.valor.toFixed(2);
+  _setValorMoedaInput(document.getElementById('editValor'), t.valor);
+  document.getElementById('editObs').value = t.observacao || '';
 
-  // Popula dropdown de Tipos e seleciona o tipo atual
   populateEditSubcats(t.tipo);
   document.getElementById('editSubcat').value = t.subcat || '';
-
-  // Preenche Categoria automaticamente a partir do tipo selecionado
   const catFound = findCatForTipo(t.tipo, t.subcat) || t.cat || '';
   document.getElementById('editCat').value = catFound;
 
-  // No modo cliente, só Receita/Despesa e Tipo/Categoria podem ser alterados —
-  // data, descrição e valor ficam bloqueados (são de responsabilidade do planejador).
-  const isCliente = STATE.MODO === 'cliente';
-  ['editData', 'editDesc', 'editValor'].forEach(id => {
+  // Modo cliente: só Tipo (categoria acompanha) e Observação. Planejador: tudo liberado.
+  ['editData', 'editDesc', 'editValor', 'editTipoMov'].forEach(id => {
     document.getElementById(id).disabled = isCliente;
   });
+  document.getElementById('editObs').disabled = false;
   const hint = document.getElementById('editModalHint');
   if (hint) hint.style.display = isCliente ? '' : 'none';
 
   overlay.classList.add('open');
-  document.getElementById(isCliente ? 'editTipoMov' : 'editDesc').focus();
+  document.getElementById(isCliente ? 'editSubcat' : 'editDesc').focus();
 }
 
 function closeEditModal() {
   document.getElementById('editOverlay').classList.remove('open');
   STATE._editIdx = -1;
   STATE._novoRegistro = false;
+  STATE._editPend = false;
 }
 
 function populateEditSubcats(tipoMov) {
   const sel = document.getElementById('editSubcat');
-  const origem = tipoMov === 'Ganho' ? 'GANHOS' : (tipoMov === 'Outro' ? 'OUTRO' : 'GASTOS');
-  // Coleta todos os tipos de todas as categorias daquela origem
-  const allTipos = [];
-  for (const [cat, tipos] of Object.entries(TREE[origem] || {})) {
-    tipos.forEach(t => allTipos.push({ tipo: t, cat }));
-  }
-  allTipos.sort((a, b) => a.tipo.localeCompare(b.tipo, 'pt-BR'));
-  sel.innerHTML = '<option value="">Selecione…</option>' +
-    allTipos.map(item => `<option value="${escAttr(item.tipo)}" data-cat="${escAttr(item.cat)}">${escAttr(item.tipo)}</option>`).join('');
+  // Lista = tipos da Origem Base do registro + tipos de OUTRO (transferências).
+  // Cliente: sempre pela Origem Base do registro. Planejador: segue a Natureza escolhida
+  // (Transferência mantém a Origem Base original).
+  let base;
+  if (STATE.MODO === 'cliente' && !STATE._novoRegistro) base = STATE._editBase || 'DESPESA';
+  else if (tipoMov === 'Outro') base = STATE._editBase || 'DESPESA';
+  else base = tipoMov === 'Ganho' ? 'RECEITA' : 'DESPESA';
+  sel.innerHTML = _optionsTipos(_tiposPermitidos([base]));
 }
 
 function onEditTipoMovChange() {
   const tipoMov = document.getElementById('editTipoMov').value;
+  if (STATE._novoRegistro && tipoMov !== 'Outro') STATE._editBase = tipoMov === 'Ganho' ? 'RECEITA' : 'DESPESA';
   populateEditSubcats(tipoMov);
   document.getElementById('editCat').value = '';
 }
@@ -6067,6 +6953,17 @@ function onEditSubcatChange() {
   const selected = sel.options[sel.selectedIndex];
   const cat = selected ? (selected.getAttribute('data-cat') || '') : '';
   document.getElementById('editCat').value = cat;
+
+  // Tipo de OUTRO → Natureza vira Transferência. Tipo da Origem Base → volta à natureza
+  // da Origem Base (assim reclassificar de transferência para receita/despesa funciona).
+  const origemReal = selected ? selected.getAttribute('data-origem-real') : null;
+  const tipoMovAtual = document.getElementById('editTipoMov').value;
+  if (origemReal === 'OUTRO' && tipoMovAtual !== 'Outro') {
+    document.getElementById('editTipoMov').value = 'Outro';
+    showToast('Natureza ajustada para "Transferência" — esse Tipo é de transferência.', 'info');
+  } else if (origemReal && origemReal !== 'OUTRO' && tipoMovAtual === 'Outro') {
+    document.getElementById('editTipoMov').value = origemReal === 'GANHOS' ? 'Ganho' : 'Gasto';
+  }
 }
 
 // Busca a categoria de um tipo em toda a árvore
@@ -6099,13 +6996,10 @@ function saveEditRecord() {
   }
 
   if (STATE._novoRegistro) {
-    // ── Criação de um novo registro (só modo planejador) ──────────────────
-    if (isCliente) return;
-
+    // ── Criação de um novo registro (planejador e cliente) ────────────────
     const dateVal = document.getElementById('editData').value;
     const desc    = document.getElementById('editDesc').value.trim();
-    const valor   = parseFloat(document.getElementById('editValor').value);
-    const recurso = document.getElementById('editRecurso').value.trim() || 'Recurso não informado';
+    const valor   = parseFloat(document.getElementById('editValor').dataset.valor);
 
     if (!dateVal || !desc || isNaN(valor)) {
       showToast('Preencha todos os campos obrigatórios (incluindo o Tipo).', 'erro');
@@ -6122,8 +7016,16 @@ function saveEditRecord() {
       id:  STATE.DATA.transactions.length,
       _excelRow: null, // não existe na planilha original — registro nativo do dashboard
       _addedManually: true,
+      _addedBy: STATE.MODO, // 'planejador' ou 'cliente' — quem incluiu este lançamento
+      _nid: 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+      // Lançamento manual: a data digitada vale para as duas datas (Competência e Caixa)
+      dataCompetencia: newDate, dataCaixa: newDate,
+      arquivoOrigem: _origemManual(document.getElementById('editInstituicao').value), observacao: (document.getElementById('editObs').value || '').trim(),
+      justificativa: STATE.MODO === 'cliente' ? `Incluído pelo cliente em ${_carimboCliente()}.` : '',
+      origemBase: tipoMov === 'Ganho' ? 'RECEITA' : 'DESPESA',
+      status: STATUS_OK,
       date: newDate, month: newMonth, monthKey: newMonthKey,
-      tipo: tipoMov, desc, cat, subcat, recurso,
+      tipo: tipoMov, desc, cat, subcat, recurso: _origemManual(document.getElementById('editInstituicao').value),
       valor: Math.abs(valor),
       valorRaw: tipoMov==='Gasto' ? Math.abs(valor) : -Math.abs(valor),
       _edited: false, _editedAt: null,
@@ -6151,7 +7053,8 @@ function saveEditRecord() {
   }
 
   // ── Edição de um registro existente ──────────────────────────────────────
-  const t = STATE.DATA.transactions[STATE._editIdx];
+  const t = (STATE._editPend ? STATE.PENDENTES : STATE.DATA.transactions)[STATE._editIdx];
+  if (!t) return;
 
   // No modo cliente, data/descrição/valor são somente leitura — mantém os valores
   // originais independentemente do que estiver nos campos (bloqueados no HTML).
@@ -6160,7 +7063,7 @@ function saveEditRecord() {
   if (!isCliente) {
     const dateVal = document.getElementById('editData').value;
     desc  = document.getElementById('editDesc').value.trim();
-    valor = parseFloat(document.getElementById('editValor').value);
+    valor = parseFloat(document.getElementById('editValor').dataset.valor);
 
     if (!dateVal || !desc || isNaN(valor)) {
       showToast('Preencha todos os campos obrigatórios (incluindo o Tipo).', 'erro');
@@ -6173,6 +7076,11 @@ function saveEditRecord() {
     newMonth = newDate.toLocaleDateString('pt-BR',{month:'short',year:'numeric'}).replace('. ','/');
   }
 
+  const _antesEd = _snapEdicao(t);
+  // A data editada vale para o regime ativo (lançamentos manuais: para as duas datas).
+  if (t._addedManually) { t.dataCompetencia = newDate; t.dataCaixa = newDate; }
+  else if (STATE.REGIME === 'caixa') t.dataCaixa = newDate;
+  else t.dataCompetencia = newDate;
   t.date     = newDate;
   t.month    = newMonth;
   t.monthKey = newMonthKey;
@@ -6182,8 +7090,12 @@ function saveEditRecord() {
   t.subcat   = subcat || t.subcat;
   t.valor    = Math.abs(valor);
   t.valorRaw = tipoMov==='Gasto' ? Math.abs(valor) : -Math.abs(valor);
+  t.observacao = (document.getElementById('editObs').value || '').trim();
+  if (!isCliente) { if (tipoMov === 'Ganho') t.origemBase = 'RECEITA'; else if (tipoMov === 'Gasto') t.origemBase = 'DESPESA'; }
+  if (!t._addedManually) _registraAlteracaoCliente(t, _antesEd);
   t._edited    = true;
   t._editedAt  = new Date();
+  if (STATE._editPend) _promoverPendentes([t]);
   STATE._hasUnsavedChanges = true;
     atualizarIndicadorAlteracoes();
 
@@ -6220,28 +7132,20 @@ function saveEditRecord() {
 }
 
 function deleteRegistro(txIdx) {
-  // Exclusão só é permitida no modo planejador — trava dupla (UI + lógica)
-  if (STATE.MODO !== 'planejador') return;
-  if (!STATE.DATA || txIdx < 0 || txIdx >= STATE.DATA.transactions.length) return;
+  const arr = STATE.regModoPendentes ? STATE.PENDENTES : (STATE.DATA ? STATE.DATA.transactions : []);
+  if (!STATE.DATA || txIdx < 0 || txIdx >= arr.length) return;
 
-  const t = STATE.DATA.transactions[txIdx];
+  const t = arr[txIdx];
   const dateStr = t.date instanceof Date ? t.date.toLocaleDateString('pt-BR') : '';
-  showConfirm(`Excluir o registro "${t.desc}" (${dateStr}, ${fmtR(t.valor)})? Esta ação não pode ser desfeita.`, () => {
-    STATE.DATA.transactions.splice(txIdx, 1);
+  const extra = STATE.MODO === 'cliente' ? ' A exclusão fica registrada na aba "Registros Excluídos" do arquivo.' : ' A exclusão fica registrada na aba "Registros Excluídos".';
+  showConfirm(`Excluir o registro "${t.desc}" (${dateStr}, ${fmtR(t.valor)})?${extra}`, () => {
+    _logExclusao(t);
+    arr.splice(txIdx, 1);
     STATE._hasUnsavedChanges = true;
     atualizarIndicadorAlteracoes();
     rebuildDataFromTransactions();
-
-    const viewAtDelete = STATE.currentView;
-    if (viewAtDelete === 'registros') {
-      initRegistros();
-    } else if (viewAtDelete === 'dashboard') {
-      renderAll();
-    } else if (viewAtDelete === 'budget') {
-      renderBudgetScreen();
-    } else if (viewAtDelete === 'invest') {
-      renderInvestScreen();
-    }
+    _atualizaBtnCorrecoes();
+    _refreshViewAposExclusao();
     showToast('Registro excluído.', 'ok');
   });
 }
@@ -6268,6 +7172,10 @@ function toggleSelecionarTodosReg(checked) {
 function atualizarIndicadorAlteracoes() {
   const el = document.getElementById('unsavedIndicator');
   if (el) el.classList.toggle('show', !!STATE._hasUnsavedChanges);
+  const tx = document.getElementById('unsavedTexto');
+  if (tx) tx.textContent = STATE.MODO === 'planejador'
+    ? 'Você tem alterações não salvas — exporte o XLSX antes de sair'
+    : 'Você tem alterações não enviadas — use “Salvar meu progresso” ou “Enviar Correções (.dat)” antes de sair';
 }
 
 // Aviso nativo do navegador ao tentar fechar a aba/janela com alterações pendentes.
@@ -6283,14 +7191,18 @@ window.addEventListener('beforeunload', (e) => {
 });
 
 function atualizarToolbarBulkReg() {
-  const btn = document.getElementById('btnExcluirSelecionados');
-  if (btn) {
-    const n = STATE.regSelecionados.size;
-    btn.textContent = n > 0 ? `🗑️ Excluir selecionados (${n})` : '🗑️ Excluir selecionados';
+  const n = STATE.regSelecionados.size;
+  [
+    { id: 'btnExcluirSelecionados', label: '🗑️ Excluir selecionados' },
+    { id: 'btnReclassificarSelecionados', label: '✏️ Reclassificar selecionados' },
+  ].forEach(({ id, label }) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.textContent = n > 0 ? `${label} (${n})` : label;
     btn.disabled = n === 0;
     btn.style.opacity = n === 0 ? '.5' : '';
     btn.style.cursor = n === 0 ? 'default' : 'pointer';
-  }
+  });
 
   const chks   = document.querySelectorAll('#regTableBody .reg-row-chk');
   const chkAll = document.getElementById('regSelectAllChk');
@@ -6307,22 +7219,91 @@ function atualizarToolbarBulkReg() {
   }
 }
 
-function excluirRegistrosSelecionados() {
-  if (STATE.MODO !== 'planejador') return;
+// ── Reclassificação em massa (Registros) ─────────────────────────────────────
+function _selecionadosReg() {
+  const arr = STATE.regModoPendentes ? STATE.PENDENTES : (STATE.DATA ? STATE.DATA.transactions : []);
+  return Array.from(STATE.regSelecionados).map(i => arr[i]).filter(Boolean);
+}
+function abrirModalReclassificar() {
   if (!STATE.DATA || STATE.regSelecionados.size === 0) return;
+  const sel = _selecionadosReg();
+  const n = sel.length;
+  const bases = sel.map(t => t.origemBase || (t.tipo === 'Ganho' ? 'RECEITA' : 'DESPESA'));
+  const mista = new Set(bases).size > 1;
+  document.getElementById('reclassificarContagem').innerHTML =
+    `${n} registro${n !== 1 ? 's' : ''} selecionado${n !== 1 ? 's' : ''}.` +
+    (mista ? '<br><strong>Receitas e despesas juntas:</strong> só é possível aplicar Tipos de transferência (OUTRO). Para os demais, selecione só receitas ou só despesas.' : '');
+  document.getElementById('reclassSubcat').innerHTML = _optionsTipos(_tiposPermitidos(bases));
+  document.getElementById('reclassCat').value = '';
+  document.getElementById('reclassificarOverlay').classList.add('open');
+}
 
-  // Ordem decrescente para que o splice não desloque os índices ainda não removidos
+function fecharModalReclassificar() {
+  document.getElementById('reclassificarOverlay').classList.remove('open');
+}
+
+function _populateReclassSubcats() { /* lista definida em abrirModalReclassificar */ }
+
+function onReclassTipoMovChange() { /* Natureza oculta: a lista vem da Origem Base dos selecionados */ }
+
+function onReclassSubcatChange() {
+  const sel = document.getElementById('reclassSubcat');
+  const selected = sel.options[sel.selectedIndex];
+  document.getElementById('reclassCat').value = selected ? (selected.getAttribute('data-cat') || '') : '';
+}
+
+function confirmarReclassificacao() {
+  if (!STATE.DATA) return;
+  const subcat = document.getElementById('reclassSubcat').value;
+  const cat    = document.getElementById('reclassCat').value;
+  if (!subcat || !cat) { showToast('Selecione o Tipo antes de aplicar.', 'erro'); return; }
+
+  const lista = _selecionadosReg();
+  const n = lista.length;
+  const eOutro = !!(TREE.OUTRO && Object.values(TREE.OUTRO).some(ts => ts.includes(subcat)));
+  const pend = STATE.regModoPendentes;
+
+  showConfirm(`Reclassificar ${n} registro${n !== 1 ? 's' : ''} para "${cat} / ${subcat}"? Data, descrição, origem e valor de cada um continuam os mesmos.${pend ? ' Eles passam a "' + STATUS_OK + '" e entram nos números.' : ''}`, () => {
+    lista.forEach(t => {
+      const _antesRc = _snapEdicao(t);
+      const base = t.origemBase || (t.tipo === 'Ganho' ? 'RECEITA' : 'DESPESA');
+      t.tipo     = eOutro ? 'Outro' : (base === 'RECEITA' ? 'Ganho' : 'Gasto');
+      t.cat      = cat;
+      t.subcat   = subcat;
+      t.valorRaw = t.tipo === 'Gasto' ? Math.abs(t.valor) : -Math.abs(t.valor);
+      if (!t._addedManually) _registraAlteracaoCliente(t, _antesRc);
+      t._edited    = true;
+      t._editedAt  = new Date();
+    });
+    if (pend) _promoverPendentes(lista);
+
+    STATE.regSelecionados.clear();
+    STATE._hasUnsavedChanges = true;
+    atualizarIndicadorAlteracoes();
+    rebuildDataFromTransactions();
+    _atualizaBtnCorrecoes();
+    fecharModalReclassificar();
+    _refreshViewAposExclusao();
+    showToast(`${n} registro${n !== 1 ? 's' : ''} reclassificado${n !== 1 ? 's' : ''}.${pend ? ' Lembre de salvar o arquivo.' : ''}`, 'ok');
+  });
+}
+
+function excluirRegistrosSelecionados() {
+  if (!STATE.DATA || STATE.regSelecionados.size === 0) return;
+  const arr = STATE.regModoPendentes ? STATE.PENDENTES : STATE.DATA.transactions;
+
   const idxs = Array.from(STATE.regSelecionados).sort((a, b) => b - a);
   const n = idxs.length;
 
-  showConfirm(`Excluir ${n} registro${n !== 1 ? 's' : ''} selecionado${n !== 1 ? 's' : ''}? Esta ação não pode ser desfeita.`, () => {
+  showConfirm(`Excluir ${n} registro${n !== 1 ? 's' : ''} selecionado${n !== 1 ? 's' : ''}? As exclusões ficam registradas na aba "Registros Excluídos".`, () => {
     idxs.forEach(i => {
-      if (i >= 0 && i < STATE.DATA.transactions.length) STATE.DATA.transactions.splice(i, 1);
+      if (i >= 0 && i < arr.length) { _logExclusao(arr[i]); arr.splice(i, 1); }
     });
     STATE.regSelecionados.clear();
     STATE._hasUnsavedChanges = true;
     atualizarIndicadorAlteracoes();
     rebuildDataFromTransactions();
+    _atualizaBtnCorrecoes();
     _refreshViewAposExclusao();
     showToast(`${n} registro${n !== 1 ? 's' : ''} excluído${n !== 1 ? 's' : ''}.`, 'ok');
   });
@@ -6358,6 +7339,45 @@ function rebuildDataFromTransactions() {
   // O restante é O(n) sobre as transações — imperceptível na prática.
   const { fileName, sheetName, transactions } = STATE.DATA;
   processData(transactions, fileName, sheetName, /*skipBudget=*/true);
+  // Os meses podem ter mudado (registro novo, data editada): descarta os caches de período
+  // e redesenha o dashboard ao voltar para ele — senão ele continua mostrando a lista antiga.
+  STATE._visIdxsCache = null; STATE._budgetVisIdxsCache = null;
+  STATE._dashStale = (STATE.currentView !== 'dashboard');
+  if (STATE.currentView === 'dashboard') buildDashYearButtons();
+}
+
+// ── Regime de Competência / Caixa ────────────────────────────────────────────
+function atualizarRegimeUI() {
+  const c = document.getElementById('regimeBtnCompetencia');
+  const x = document.getElementById('regimeBtnCaixa');
+  if (c) c.classList.toggle('active', STATE.REGIME !== 'caixa');
+  if (x) x.classList.toggle('active', STATE.REGIME === 'caixa');
+}
+
+function setRegime(r) {
+  if (!STATE.DATA || STATE.REGIME === r || (r !== 'competencia' && r !== 'caixa')) return;
+  STATE.REGIME = r;
+  atualizarRegimeUI();
+
+  // Os meses disponíveis mudam conforme a data usada — todos os filtros de período
+  // voltam para "todos" para não apontarem para um mês que deixou de existir.
+  STATE.activeYear = 'all'; STATE.activeMonth = 'all'; STATE.activeMonthTo = null; STATE._visIdxsCache = null;
+  STATE.budgetActiveYear = 'all'; STATE.budgetActiveMonth = 'all'; STATE.budgetActiveMonthTo = null; STATE._budgetVisIdxsCache = null;
+  STATE.investActiveYear = 'all'; STATE.investActiveMonth = 'all'; STATE.investActiveMonthTo = null;
+  STATE.regActiveYear = 'all'; STATE.regActiveMonth = 'all'; STATE.regActiveMonthTo = null;
+  STATE.regSelecionados.clear();
+  if (typeof invalidateRealizadoCache === 'function') invalidateRealizadoCache();
+
+  rebuildDataFromTransactions(); // processData reaplica o regime a todos os registros
+
+  const v = STATE.currentView;
+  STATE._dashStale = (v !== 'dashboard');
+  if (v === 'dashboard')      { buildDashYearButtons(); renderAll(); }
+  else if (v === 'budget')    { buildBudgetYearButtons(); renderBudgetScreen(); }
+  else if (v === 'invest')    { renderInvestScreen(); }
+  else if (v === 'registros') { initRegistros(); }
+  else if (v === 'reserva')   { renderReservaScreen(); }
+  showToast(`Regime de ${r === 'caixa' ? 'Caixa' : 'Competência'} ativado.`, 'info');
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -6643,7 +7663,13 @@ function _gerarSenha() {
 }
 
 // ── Modal de senha gerada ────────────────────────────────────────────────────
-function _abrirModalSenha(senha) {
+function _abrirModalSenha(senha, ehCliente) {
+  const sub = document.querySelector('#senhaOverlay .senha-sub');
+  const em = document.getElementById('senhaBtnEmail');
+  if (sub) sub.textContent = ehCliente
+    ? 'Anote ou copie a senha abaixo. Você vai precisar dela para reabrir o arquivo do seu progresso.'
+    : 'Anote ou copie a senha abaixo e envie ao cliente por um canal separado do arquivo.';
+  if (em) em.style.display = ehCliente ? 'none' : '';
   document.getElementById('senhaGerada').textContent = senha;
   document.getElementById('senhaOverlay').classList.add('open');
   document.getElementById('senhaBtnCopiar').textContent = '📋 Copiar senha';
@@ -6652,39 +7678,202 @@ function _fecharModalSenha() {
   document.getElementById('senhaOverlay').classList.remove('open');
 }
 
-function exportarDAT() {
-  if (!STATE.DATA) { showToast('Nenhum dado carregado.', 'erro'); return; }
+// Serialização de um registro para o .dat (campos curtos). `d` continua sendo a data de
+// competência, por compatibilidade; dc/dx guardam as duas datas.
+function _txParaDat(t) {
+  return {
+    rid: t._excelRow ?? null, // âncora da linha original — usada para casar correções depois
+    d: toLocalDateStr(t.dataCompetencia || t.date) || null,
+    dc: toLocalDateStr(t.dataCompetencia || t.date) || null,
+    dx: toLocalDateStr(t.dataCaixa || t.date) || null,
+    tp: t.tipo, ds: t.desc, c: t.cat, s: t.subcat, r: t.recurso,
+    ao: t.arquivoOrigem || '', obs: t.observacao || '', j: t.justificativa || '',
+    ob: t.origemBase || (t.tipo === 'Ganho' ? 'RECEITA' : 'DESPESA'),
+    st: t.status === STATUS_PEND ? 'P' : 'O',
+    am: t._addedManually ? 1 : 0, ab: t._addedBy || '', nid: t._nid || null,
+    v: t.valor, vr: t.valorRaw,
+    ea: t._editedAt instanceof Date ? t._editedAt.toISOString() : null,
+  };
+}
+function _txDeDat(t, i) {
+  const pd = s => { if (!s) return null; const [y, m, d] = s.split('-'); return new Date(+y, +m - 1, +d); };
+  const dComp  = pd(t.dc) || pd(t.d) || new Date();
+  const dCaixa = pd(t.dx) || pd(t.d) || dComp;
+  const editedAt = t.ea ? new Date(t.ea) : null;
+  const obj = {
+    idx: i, id: i, _excelRow: t.rid ?? null,
+    dataCompetencia: dComp, dataCaixa: dCaixa, date: dComp, month: null, monthKey: null,
+    tipo: t.tp, desc: t.ds, cat: t.c, subcat: t.s,
+    recurso: t.r || '', arquivoOrigem: t.ao != null ? t.ao : (t.r || ''),
+    observacao: t.obs || '', justificativa: t.j || '',
+    origemBase: t.ob || (t.tp === 'Ganho' ? 'RECEITA' : 'DESPESA'),
+    status: t.st === 'P' ? STATUS_PEND : STATUS_OK,
+    valor: t.v, valorRaw: t.vr,
+    _edited: !!editedAt, _editedAt: editedAt,
+  };
+  if (t.am) { obj._addedManually = true; obj._addedBy = t.ab || ''; }
+  if (t.nid) obj._nid = t.nid;
+  _aplicarRegime(obj);
+  return obj;
+}
 
-  const senha = _gerarSenha();
-  const key   = _deriveKey(senha);
 
-  // ── Cabeçalho em texto puro: só metadados de validade (nada sensível) ──────
-  const now      = new Date();
-  const expires  = new Date(now); expires.setDate(expires.getDate() + 40);
-  const cabecalho = JSON.stringify({ v: 1, exportedAt: now.toISOString(), expiresAt: expires.toISOString() });
+// ── Criptografia (WebCrypto) ─────────────────────────────────────────────────
+// Planejador → cliente (TWD2): senha aleatória de 6 caracteres → PBKDF2 (200 mil voltas) → AES-GCM.
+// Cliente → planejador (TWDK): chave pública do planejador (RSA-OAEP) tranca uma chave AES-GCM
+// aleatória; só a chave privada do planejador abre. O cliente nunca digita senha ao enviar.
+// A chave pública pode ficar visível no código. Cole aqui o JSON gerado em Registros → 🔑 Chaves:
+const CHAVE_PUBLICA_JWK = {"kty":"RSA","n":"0mnPcSLBp4JfqVfdBDcP4Izb0V_7zQRdOxagFenZz6RWET8ryKMTjThpC2TDzfadqNvcrAn_2YiV81_v39BJmL3bQgxQLocOx24hygEJJkBOhE3N626IgkpEvHSltURPXEFhh-Knzkub9haPrXZi60-P4Mwk6P_gLf3yzex7Ti1MMDbO8rKR1jMUHqZMONdaxuRZHhXciAWCscOMLh1JKCJpG6cnu9iyplauJ1gajaL7BoIBKQgw2XiZy4HOmdDefXMLJP-9nuVMP3Oo-t4SPe5pjbcXhPv81eoJv_tZyOXdnvP56VZyof82FosXB3D0HIM_kBVdrvBf6XNnyCM06Q","e":"AQAB","alg":"RSA-OAEP-256","ext":true,"key_ops":["encrypt"]};
+const DAT_MAGIC2      = 'TWD2'; // arquivo completo, cifra forte (planejador → cliente)
+const DAT_MAGIC_CHAVE = 'TWDK'; // correções trancadas com a chave pública (cliente → planejador)
+const PBKDF2_VOLTAS   = 200000;
+const DAT_VALIDADE_DIAS = 45; // todo .dat só abre até 45 dias depois de gerado
 
-  // ── Corpo cifrado com a chave derivada da senha ───────────────────────────
-  const corpo = {
+// A data de validade fica no cabeçalho (legível) E dentro da parte cifrada. Ao abrir, as duas
+// precisam bater — assim, editar a data no cabeçalho não prolonga o arquivo.
+function _validadeDat() { const now = new Date(); const exp = new Date(now); exp.setDate(exp.getDate() + DAT_VALIDADE_DIAS); return { now, exp }; }
+function _erroValidade(cab, corpo) {
+  const fmt = d => new Date(d).toLocaleDateString('pt-BR');
+  if (cab && cab.v >= 3) {
+    if (!corpo || !corpo.exp || cab.expiresAt !== corpo.exp) return 'Arquivo alterado ou corrompido. Solicite um novo arquivo.';
+    if (new Date() > new Date(corpo.exp)) return `Arquivo expirado em ${fmt(corpo.exp)}. Solicite um novo arquivo.`;
+    return null;
+  }
+  if (!cab || !cab.expiresAt) return 'Arquivo sem data de validade. Solicite um novo arquivo.';
+  if (new Date() > new Date(cab.expiresAt)) return `Arquivo expirado em ${fmt(cab.expiresAt)}. Solicite um novo arquivo.`;
+  return null;
+}
+
+
+function _u8ToB64(u8) { let s = ''; for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]); return btoa(s); }
+function _b64ToU8(b64) { return Uint8Array.from(atob(b64), c => c.charCodeAt(0)); }
+
+async function _aesDeSenha(senha, salt, uso) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(String(senha).toUpperCase()), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: PBKDF2_VOLTAS, hash: 'SHA-256' }, base,
+    { name: 'AES-GCM', length: 256 }, false, [uso]);
+}
+async function _cifrarComSenha(obj, senha) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await _aesDeSenha(senha, salt, 'encrypt');
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(obj)));
+  return JSON.stringify({ s: _u8ToB64(salt), iv: _u8ToB64(iv), d: _u8ToB64(new Uint8Array(ct)) });
+}
+async function _decifrarComSenha(txt, senha) { // lança erro se a senha estiver errada
+  const o = JSON.parse(txt);
+  const key = await _aesDeSenha(senha, _b64ToU8(o.s), 'decrypt');
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: _b64ToU8(o.iv) }, key, _b64ToU8(o.d));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+async function _cifrarParaPlanejador(obj, pubJwk) {
+  const pub = await crypto.subtle.importKey('jwk', pubJwk, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+  const aes = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt']);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aes, new TextEncoder().encode(JSON.stringify(obj)));
+  const k = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, pub, await crypto.subtle.exportKey('raw', aes));
+  return JSON.stringify({ k: _u8ToB64(new Uint8Array(k)), iv: _u8ToB64(iv), d: _u8ToB64(new Uint8Array(ct)) });
+}
+async function _decifrarComPrivada(txt, privJwk) {
+  const o = JSON.parse(txt);
+  const priv = await crypto.subtle.importKey('jwk', privJwk, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
+  const raw = await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, priv, _b64ToU8(o.k));
+  const aes = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: _b64ToU8(o.iv) }, aes, _b64ToU8(o.d));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+function _pubDeJwkPrivada(j) { return { kty: 'RSA', n: j.n, e: j.e, alg: 'RSA-OAEP-256', ext: true, key_ops: ['encrypt'] }; }
+function _chavePublicaAtiva() { return STATE._pubDoDat || CHAVE_PUBLICA_JWK || null; }
+
+// ── Chaves do planejador (modal 🔑 Chaves) ───────────────────────────────────
+async function gerarParDeChaves() {
+  const par = await crypto.subtle.generateKey({ name: 'RSA-OAEP', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' }, true, ['encrypt', 'decrypt']);
+  const priv = await crypto.subtle.exportKey('jwk', par.privateKey);
+  const pub = _pubDeJwkPrivada(priv);
+  STATE._chavePrivada = priv;
+  const arq = { app: 'THE WAYS', tipo: 'chave-privada', criada: new Date().toISOString(), jwk: priv, publica: pub };
+  STATE._chavePrivTxt = JSON.stringify(arq);
+  document.getElementById('chavesPublicaTxt').value = JSON.stringify(pub);
+  document.getElementById('chavesPrivTxt').value = STATE._chavePrivTxt;
+  document.getElementById('chavesPublicaBox').style.display = '';
+  baixarChavePrivada();
+  atualizarStatusChaves();
+  showToast('Chave gerada. Confirme que o arquivo foi baixado — se não, use o botão "Baixar chave privada" na janela.', 'info');
+}
+function baixarChavePrivada() {
+  if (!STATE._chavePrivTxt) return;
+  const blob = new Blob([STATE._chavePrivTxt], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'THE-WAYS_chave-privada_' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function copiarChavePrivada() {
+  const t = document.getElementById('chavesPrivTxt'); t.select();
+  try { navigator.clipboard.writeText(t.value); showToast('Chave privada copiada. Cole num arquivo de texto e salve com a extensão .json.', 'ok'); } catch { document.execCommand('copy'); }
+}
+function carregarChavePrivada(file) {
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = async e => {
+    try {
+      const o = JSON.parse(e.target.result);
+      const j = o && o.jwk;
+      if (!j || j.kty !== 'RSA' || !j.d) throw new Error('arquivo sem chave privada');
+      await crypto.subtle.importKey('jwk', j, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
+      STATE._chavePrivada = j;
+      atualizarStatusChaves();
+      showToast('Chave privada carregada.', 'ok');
+      if (STATE._corrKPendente) { const p = STATE._corrKPendente; STATE._corrKPendente = null; fecharModalChaves(); _abrirCorrecoesK(p.b64, p.cab); }
+    } catch { showToast('Arquivo de chave inválido.', 'erro'); }
+  };
+  r.readAsText(file);
+}
+function abrirModalChaves() { atualizarStatusChaves(); document.getElementById('chavesOverlay').classList.add('open'); }
+function fecharModalChaves() { document.getElementById('chavesOverlay').classList.remove('open'); STATE._corrKPendente = null; }
+function atualizarStatusChaves() {
+  const el = document.getElementById('chavesStatus'); if (!el) return;
+  const ok = !!STATE._chavePrivada;
+  el.textContent = ok ? '✅ Chave privada carregada nesta sessão.' : '⚠️ Nenhuma chave privada carregada.';
+  el.style.color = ok ? 'var(--teal)' : 'var(--orange)';
+  const emb = document.getElementById('chavesEmbutida');
+  if (emb) emb.textContent = CHAVE_PUBLICA_JWK ? 'Chave pública embutida no dashboard: sim.' : 'Chave pública embutida no dashboard: ainda não — copie o texto da chave pública e envie para incluir no dashboard.';
+}
+function copiarChavePublica() {
+  const t = document.getElementById('chavesPublicaTxt'); t.select();
+  try { navigator.clipboard.writeText(t.value); showToast('Chave pública copiada.', 'ok'); } catch { document.execCommand('copy'); }
+}
+
+// Monta o arquivo completo (.dat) cifrado com senha — usado pelo planejador (cliente) e pelo cliente (progresso)
+function _corpoCompleto(exp, extra) {
+  return Object.assign({
     fileName: STATE.DATA.fileName || 'dados',
-    transactions: STATE.DATA.transactions.map(t => ({
-      rid: t._excelRow ?? null, // âncora da linha original — usada para casar correções depois
-      d: toLocalDateStr(t.date) || null,
-      tp: t.tipo, ds: t.desc, c: t.cat, s: t.subcat, r: t.recurso,
-      v: t.valor, vr: t.valorRaw,
-      ea: t._editedAt instanceof Date ? t._editedAt.toISOString() : null,
-    })),
+    transactions: STATE.DATA.transactions.map(_txParaDat),
+    pend: (STATE.PENDENTES || []).map(_txParaDat), // Analisar/Classificar (fora dos números)
+    excl: (STATE.EXCLUIDOS || []).map(e => ({ tx: _txParaDat(e.t), dh: e.dh.toISOString(), por: e.por })),
     budget: STATE.BUDGET || null,
     tree: TREE,
     reserva: STATE.RESERVA,
-  };
-  const corpoBytes = Array.from(new TextEncoder().encode(JSON.stringify(corpo)));
-  const corpoXored = _xorBytes(corpoBytes, key);
-  let b64str = '';
-  for (let i = 0; i < corpoXored.length; i++) b64str += String.fromCharCode(corpoXored[i]);
-  const corpoB64 = btoa(b64str);
+    metas: STATE.METAS,
+    inst: STATE.INSTITUICOES || [],
+    exp: exp.toISOString(),
+  }, extra || {});
+}
+async function _montarDatCompleto(senha, extra) {
+  const { now, exp } = _validadeDat();
+  const cabecalho = JSON.stringify({ v: 3, exportedAt: now.toISOString(), expiresAt: exp.toISOString() });
+  const corpo = _corpoCompleto(exp, extra);
+  const corpoB64 = btoa(unescape(encodeURIComponent(await _cifrarComSenha(corpo, senha))));
+  return { output: DAT_MAGIC2 + cabecalho + '|' + corpoB64, now };
+}
 
-  // ── Formato final: MAGIC + cabeçalho_json + "|" + corpo_b64 ───────────────
-  const output = DAT_MAGIC + cabecalho + '|' + corpoB64;
+async function exportarDAT() {
+  if (!STATE.DATA) { showToast('Nenhum dado carregado.', 'erro'); return; }
+
+  const senha = _gerarSenha();
+  let output, now;
+  try {
+    // Chave pública do planejador, para o cliente trancar o retorno (se esta sessão tem a chave carregada)
+    ({ output, now } = await _montarDatCompleto(senha, { pub: STATE._chavePrivada ? _pubDeJwkPrivada(STATE._chavePrivada) : (_chavePublicaAtiva() || null) }));
+  } catch (err) { showToast('Não foi possível gerar o arquivo: ' + err.message, 'erro'); return; }
 
   const blob = new Blob([output], { type: 'application/octet-stream' });
   const name = (STATE.DATA.fileName || 'dashboard').replace(/\.[^.]+$/, '');
@@ -6698,61 +7887,75 @@ function exportarDAT() {
     });
 }
 
+// Cliente: salva uma cópia completa do que fez até agora, para reabrir quando quiser.
+// Usa a senha do .dat que ele abriu; quem começou do zero recebe uma senha gerada (mostrada uma vez).
+async function salvarProgresso() {
+  if (!STATE.DATA) { showToast('Nenhum dado carregado.', 'erro'); return; }
+  let senhaNova = false;
+  if (!STATE._senhaDat) { STATE._senhaDat = _gerarSenha(); senhaNova = true; }
+  let output, now;
+  try { ({ output, now } = await _montarDatCompleto(STATE._senhaDat, { zero: !!STATE._ehDoZero, pub: _chavePublicaAtiva() })); }
+  catch (err) { showToast('Não foi possível gerar o arquivo: ' + err.message, 'erro'); if (senhaNova) STATE._senhaDat = null; return; }
+  const blob = new Blob([output], { type: 'application/octet-stream' });
+  const filename = 'meu-progresso_' + now.toISOString().slice(0, 10) + '.dat';
+  const r = await _compartilharOuBaixarArquivo(blob, filename, { title: 'Meu progresso — The Ways' });
+  if (r === 'cancelado') { if (senhaNova) STATE._senhaDat = null; return; }
+  STATE._hasUnsavedChanges = false;
+  atualizarIndicadorAlteracoes();
+  if (senhaNova) _abrirModalSenha(STATE._senhaDat, true);
+  else showToast('Progresso salvo. Para reabrir, use a mesma senha de sempre.', 'ok');
+}
+
 // ── Correções (modo cliente → planejador) ────────────────────────────────────
 // Exporta só os registros que o cliente reclassificou (Tipo/Categoria/Subcategoria),
 // reaproveitando a mesma senha usada para abrir o .dat original.
-function exportarCorrecoes() {
+function _correcoesPendentes() {
+  const ed = STATE.DATA.transactions.filter(t => t._edited && t._excelRow != null);
+  const ex = (STATE.EXCLUIDOS || []).filter(e => e.por === 'cliente' && e.t._excelRow != null);
+  const novos = STATE.DATA.transactions.filter(t => t._addedManually && t._addedBy === 'cliente');
+  return { ed, ex, novos };
+}
+async function exportarCorrecoes() {
   if (!STATE.DATA) { showToast('Nenhum dado carregado.', 'erro'); return; }
 
-  const editados = STATE.DATA.transactions.filter(t => t._edited && t._excelRow != null);
-  if (!editados.length) {
-    const editadosSemAncora = STATE.DATA.transactions.some(t => t._edited && t._excelRow == null);
-    if (editadosSemAncora) {
-      showToast('Este arquivo .dat foi gerado por uma versão anterior e não suporta o envio de correções. Peça ao seu consultor um novo arquivo .dat atualizado.', 'erro');
-    } else {
-      showToast('Nenhuma correção para enviar.', 'info');
-    }
+  const { ed: editados, ex: excluidos, novos } = _correcoesPendentes();
+  if (!editados.length && !excluidos.length && !novos.length && !STATE._instAlterada) {
+    showToast('Nenhuma alteração para enviar.', 'info');
     return;
   }
 
-  if (!STATE._senhaAtual) {
-    showToast('Não foi possível localizar a senha da sessão. Reabra o arquivo .dat recebido do planejador e tente novamente.', 'erro');
+  const pub = _chavePublicaAtiva();
+  if (!pub) {
+    showToast('A chave de envio ainda não está configurada neste dashboard. Fale com o seu planejador.', 'erro');
     return;
   }
 
-  const key = _deriveKey(STATE._senhaAtual);
+  const { now, exp: expires } = _validadeDat();
+  const cabecalho = JSON.stringify({ v: 3, exportedAt: now.toISOString(), expiresAt: expires.toISOString() });
 
-  const now     = new Date();
-  const expires = new Date(now); expires.setDate(expires.getDate() + 40);
-  const cabecalho = JSON.stringify({ v: 1, exportedAt: now.toISOString(), expiresAt: expires.toISOString() });
+  // Cópia COMPLETA da base do cliente (já com as alterações): ao abrir, ela vira a base atual do planejador
+  const corpo = _corpoCompleto(expires, { completo: true, zero: !!STATE._ehDoZero });
 
-  const corpo = {
-    fileName: STATE.DATA.fileName || 'dados',
-    correcoes: editados.map(t => ({
-      rid: t._excelRow,
-      tp: t.tipo, c: t.cat, s: t.subcat,
-      ea: t._editedAt instanceof Date ? t._editedAt.toISOString() : null,
-    })),
-  };
+  let corpoB64;
+  try { corpoB64 = btoa(unescape(encodeURIComponent(await _cifrarParaPlanejador(corpo, pub)))); }
+  catch (err) { showToast('Não foi possível gerar o arquivo: ' + err.message, 'erro'); return; }
 
-  const corpoBytes = Array.from(new TextEncoder().encode(JSON.stringify(corpo)));
-  const corpoXored = _xorBytes(corpoBytes, key);
-  let b64str = '';
-  for (let i = 0; i < corpoXored.length; i++) b64str += String.fromCharCode(corpoXored[i]);
-  const corpoB64 = btoa(b64str);
-
-  const output = DAT_MAGIC_CORR + cabecalho + '|' + corpoB64;
+  const output = DAT_MAGIC_CHAVE + cabecalho + '|' + corpoB64;
 
   const blob = new Blob([output], { type: 'application/octet-stream' });
   const name = (STATE.DATA.fileName || 'dashboard').replace(/\.[^.]+$/, '');
   const filename = name + '_correcoes_' + now.toISOString().slice(0, 10) + '.dat';
+  const total = editados.length + excluidos.length + novos.length;
 
   _compartilharOuBaixarArquivo(blob, filename, {
     title: 'Correções — The Ways',
-    text: 'Segue o arquivo de correções do dashboard para atualizar sua base.',
+    text: 'Segue o meu arquivo atualizado do dashboard.',
   }).then(resultado => {
     if (resultado === 'cancelado') return;
-    showToast(`✅ Arquivo de correções gerado com ${editados.length} registro(s). Envie para seu planejador financeiro.`, 'ok');
+    // Enviado: o que o cliente tinha a salvar já está no arquivo de correções
+    STATE._hasUnsavedChanges = false; STATE._instAlterada = false;
+    atualizarIndicadorAlteracoes();
+    showToast(`✅ Arquivo gerado com ${total} alteração(ões). Envie para seu planejador financeiro.`, 'ok');
   });
 }
 
@@ -6760,9 +7963,12 @@ function exportarCorrecoes() {
 function _atualizaBtnCorrecoes() {
   const btn = document.getElementById('btnExportCorrecoes');
   if (!btn) return;
-  const hasEdits = STATE.MODO === 'cliente' && STATE.DATA &&
-    STATE.DATA.transactions.some(t => t._edited && t._excelRow != null);
-  btn.style.display = hasEdits ? '' : 'none';
+  let has = false;
+  if (STATE.MODO === 'cliente' && STATE.DATA) {
+    const c = _correcoesPendentes();
+    has = c.ed.length + c.ex.length + c.novos.length > 0 || !!STATE._instAlterada;
+  }
+  btn.style.display = has ? '' : 'none';
 }
 
 // ── Tela de senha do cliente ─────────────────────────────────────────────────
@@ -6813,30 +8019,36 @@ function _tentarSenhaScreen(senha) {
   }
 }
 
-function _tentarAbrirDAT(senha) {
+function _senhaDatErrada() {
+  const inp = document.getElementById('senhaClienteInput');
+  const err = document.getElementById('senhaClienteErro');
+  inp.classList.add('erro');
+  err.textContent = 'Senha incorreta. Verifique e tente novamente.';
+  inp.addEventListener('input', () => {
+    inp.classList.remove('erro');
+    err.textContent = '';
+  }, { once: true });
+}
+async function _tentarAbrirDAT(senha) {
   if (!STATE._datPendente) return;
-  const key = _deriveKey(senha);
+  let corpo;
   try {
-    const xored = Array.from(atob(STATE._datPendente)).map(c => c.charCodeAt(0));
-    const bytes = _xorBytes(xored, key);
-    const json  = new TextDecoder().decode(new Uint8Array(bytes));
-    const corpo = JSON.parse(json);   // lança erro se senha errada → JSON inválido
-
+    if (STATE._datMagic === DAT_MAGIC2) {
+      const txt = decodeURIComponent(escape(atob(STATE._datPendente)));
+      corpo = await _decifrarComSenha(txt, senha);   // lança erro se a senha estiver errada
+    } else {
+      const key = _deriveKey(senha);
+      const xored = Array.from(atob(STATE._datPendente)).map(c => c.charCodeAt(0));
+      const bytes = _xorBytes(xored, key);
+      corpo = JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
+    }
     if (!corpo.transactions) throw new Error('formato inválido');
-
-    STATE._senhaAtual = senha; // guardada só em memória, para reenviar correções sem pedir senha de novo
-    _fecharSenhaCliente();
-    _processarCorpoDAT(corpo);
-  } catch {
-    const inp = document.getElementById('senhaClienteInput');
-    const err = document.getElementById('senhaClienteErro');
-    inp.classList.add('erro');
-    err.textContent = 'Senha incorreta. Verifique e tente novamente.';
-    inp.addEventListener('input', () => {
-      inp.classList.remove('erro');
-      err.textContent = '';
-    }, { once: true });
-  }
+  } catch { _senhaDatErrada(); return; }
+  const ev = _erroValidade(STATE._datCab, corpo);
+  if (ev) { _fecharSenhaCliente(); showError(ev); return; }
+  STATE._senhaDat = senha; // só em memória: reaproveitada ao salvar o progresso do cliente
+  _fecharSenhaCliente();
+  _processarCorpoDAT(corpo);
 }
 
 // ── Correções (planejador): decifra e aplica na base atual ───────────────────
@@ -6868,20 +8080,61 @@ function _tentarAbrirCorrecoes(senha) {
 // Aplica as correções recebidas do cliente na base carregada, casando pelo
 // _excelRow (âncora da linha original na planilha).
 function _processarCorrecoes(corpo) {
-  if (!STATE.DATA) { showToast('Carregue sua planilha antes de importar correções.', 'erro'); return; }
+  if (!STATE.DATA) {
+    // Retorno de cliente que começou do zero: não há base ainda, cria uma vazia e aplica os lançamentos
+    if (!corpo.zero) {
+      // Correções de uma base existente: guarda e aplica sozinho assim que a planilha base for aberta
+      STATE._corrPorAplicar = corpo;
+      const base = corpo.fileName ? ` (base: ${corpo.fileName})` : '';
+      showError(`Arquivo de correções aberto${base}. Agora selecione a planilha base do cliente — as correções serão aplicadas automaticamente.`, true);
+      return;
+    }
+    _iniciarBaseVazia('planejador', corpo.fileName || 'Novo arquivo');
+  }
 
-  let aplicadas = 0, naoEncontradas = 0;
-  corpo.correcoes.forEach(c => {
-    const t = STATE.DATA.transactions.find(tx => tx._excelRow === c.rid);
+  let aplicadas = 0, naoEncontradas = 0, excl = 0, novos = 0;
+  const acha = rid => STATE.DATA.transactions.find(tx => tx._excelRow === rid) ||
+                      (STATE.PENDENTES || []).find(tx => tx._excelRow === rid);
+  (corpo.correcoes || []).forEach(c => {
+    const t = acha(c.rid);
     if (!t) { naoEncontradas++; return; }
+    const emPend = (STATE.PENDENTES || []).includes(t);
     t.tipo     = c.tp;
     t.cat      = c.c;
     t.subcat   = c.s;
+    if (c.o != null) t.observacao = c.o;
     t.valorRaw = t.tipo === 'Gasto' ? Math.abs(t.valor) : -Math.abs(t.valor);
     t._edited   = true;
     t._editedAt = c.ea ? new Date(c.ea) : new Date();
+    if (emPend && c.st === 'O') _promoverPendentes([t]);
     aplicadas++;
   });
+  (corpo.excl || []).forEach(e => {
+    const t = acha(e.rid);
+    if (!t) { naoEncontradas++; return; }
+    STATE.EXCLUIDOS.push({ t, dh: e.dh ? new Date(e.dh) : new Date(), por: e.por || 'cliente' });
+    const iT = STATE.DATA.transactions.indexOf(t);
+    if (iT >= 0) STATE.DATA.transactions.splice(iT, 1);
+    else STATE.PENDENTES = STATE.PENDENTES.filter(x => x !== t);
+    excl++;
+  });
+  let jaExistiam = 0;
+  (corpo.novos || []).forEach(n => {
+    const jaTem = n.nid && (STATE.DATA.transactions.some(x => x._nid === n.nid) ||
+      (STATE.EXCLUIDOS || []).some(e => e.t._nid === n.nid));
+    if (jaTem) { jaExistiam++; return; }
+    const t = _txDeDat(n, STATE.DATA.transactions.length);
+    t._excelRow = null; t._addedManually = true; t._addedBy = 'cliente';
+    STATE.DATA.transactions.push(t);
+    novos++;
+  });
+  if (aplicadas + excl + novos > 0) { STATE._hasUnsavedChanges = true; atualizarIndicadorAlteracoes(); }
+
+  let instNovas = 0;
+  _instLimpa(corpo.inst).forEach(i => {
+    if (!STATE.INSTITUICOES.some(x => _semAcento(x.nome) === _semAcento(i.nome))) { STATE.INSTITUICOES.push(i); instNovas++; }
+  });
+  if (instNovas) { STATE._hasUnsavedChanges = true; atualizarIndicadorAlteracoes(); }
 
   rebuildDataFromTransactions();
 
@@ -6890,10 +8143,15 @@ function _processarCorrecoes(corpo) {
   else if (STATE.currentView === 'budget')    renderBudgetScreen();
   else if (STATE.currentView === 'invest')    renderInvestScreen();
 
+  const partes = [`${aplicadas} correção(ões)`];
+  if (excl) partes.push(`${excl} exclusão(ões)`);
+  if (novos) partes.push(`${novos} lançamento(s) novo(s)`);
+  if (instNovas) partes.push(`${instNovas} instituição(ões) nova(s)`);
+  if (jaExistiam) partes.push(`${jaExistiam} lançamento(s) já existente(s) ignorado(s)`);
   if (naoEncontradas > 0) {
-    showToast(`✅ ${aplicadas} correção(ões) aplicada(s). ⚠️ ${naoEncontradas} não encontrada(s) na base atual (planilha pode ter mudado).`, aplicadas ? 'ok' : 'erro');
+    showToast(`✅ ${partes.join(', ')} aplicada(s). ⚠️ ${naoEncontradas} não encontrada(s) na base atual (planilha pode ter mudado). Exporte o XLSX para salvar.`, (aplicadas + excl + novos) ? 'ok' : 'erro');
   } else {
-    showToast(`✅ ${aplicadas} correção(ões) aplicada(s) com sucesso.`, 'ok');
+    showToast(`✅ ${partes.join(', ')} aplicada(s) com sucesso. Exporte o XLSX para salvar.`, 'ok');
   }
 }
 
@@ -6904,20 +8162,19 @@ function importarCorrecoes(file) {
   reader.onload = e => {
     try {
       const raw = e.target.result;
-      if (!raw.startsWith(DAT_MAGIC_CORR)) {
+      const novo = raw.startsWith(DAT_MAGIC_CHAVE);
+      if (!novo && !raw.startsWith(DAT_MAGIC_CORR)) {
         showToast('Arquivo inválido: não é um arquivo de correções (.dat) reconhecido.', 'erro');
         return;
       }
-
-      const semMagic = raw.slice(DAT_MAGIC_CORR.length);
+      const semMagic = raw.slice(4);
       const sepIdx   = semMagic.indexOf('|');
       if (sepIdx === -1) {
         showToast('Formato de arquivo não reconhecido.', 'erro');
         return;
       }
-
       const cabecalho = JSON.parse(semMagic.slice(0, sepIdx));
-      if (cabecalho.v !== 1) {
+      if (cabecalho.v !== 1 && cabecalho.v !== 2 && cabecalho.v !== 3) {
         showToast(`Versão do arquivo não suportada (v${cabecalho.v}).`, 'erro');
         return;
       }
@@ -6926,9 +8183,9 @@ function importarCorrecoes(file) {
         showToast(`Arquivo de correções expirado em ${exp}. Solicite um novo envio ao cliente.`, 'erro');
         return;
       }
-
       const corpoB64 = semMagic.slice(sepIdx + 1);
-      _abrirSenhaSlot(corpoB64, 'correcoes');
+      if (novo) _abrirCorrecoesK(corpoB64, cabecalho);      // trancado com a chave pública: abre com a chave privada
+      else _abrirSenhaSlot(corpoB64, 'correcoes'); // formato antigo, por senha
     } catch (err) {
       showToast('Erro ao ler arquivo: ' + err.message, 'erro');
     }
@@ -6936,27 +8193,79 @@ function importarCorrecoes(file) {
   reader.readAsText(file);
 }
 
+// Retorno em cópia completa: vira a base atual do planejador (a planilha anterior não é mais necessária)
+function _abrirRetornoCompleto(corpo) {
+  const abrir = () => {
+    hideError();
+    _ativarModo('planejador');
+    STATE._senhaDat = null;
+    STATE._exportMeta = { sheetName: 'Classificação' };
+    _processarCorpoDAT(corpo);
+    STATE._ehDoZero = false; STATE._pubDoDat = null;
+    STATE._hasUnsavedChanges = true; atualizarIndicadorAlteracoes();
+    showToast('Arquivo do cliente aberto: esta é a base atual dele. Exporte o XLSX para guardar.', 'ok');
+  };
+  if (STATE.DATA) showConfirm('Abrir o arquivo do cliente substitui a base que está aberta agora. Continuar?', abrir);
+  else abrir();
+}
+
+// Correções trancadas com a chave pública (TWDK): precisam da chave privada do planejador
+async function _abrirCorrecoesK(corpoB64, cab) {
+  if (!STATE._chavePrivada) {
+    STATE._corrKPendente = { b64: corpoB64, cab };
+    abrirModalChaves();
+    showToast('Carregue a sua chave privada para abrir este arquivo.', 'info');
+    return;
+  }
+  try {
+    const corpo = await _decifrarComPrivada(decodeURIComponent(escape(atob(corpoB64))), STATE._chavePrivada);
+    if (!corpo.completo && !Array.isArray(corpo.correcoes)) throw new Error('formato inválido');
+    const ev = _erroValidade(cab, corpo);
+    if (ev) { showToast(ev, 'erro'); return; }
+    if (corpo.completo) _abrirRetornoCompleto(corpo);
+    else _processarCorrecoes(corpo);
+  } catch {
+    showToast('Não foi possível abrir este arquivo com a chave carregada. Confira se é a chave certa.', 'erro');
+  }
+}
+
 function _processarCorpoDAT(corpo) {
   if (corpo.tree) TREE = _normalizeTree(corpo.tree);
   STATE.RESERVA = corpo.reserva || defaultReserva();
   if (!STATE.RESERVA.ativos) STATE.RESERVA.ativos = [];
+  STATE.METAS = corpo.metas || defaultMetas();
+  STATE.INSTITUICOES = _instLimpa(corpo.inst);
+  STATE._instAlterada = false;
+  STATE._ehDoZero = !!corpo.zero;
+  STATE._pubDoDat = (corpo.pub && corpo.pub.kty === 'RSA') ? corpo.pub : null;
 
-  const transactions = corpo.transactions.map((t, i) => {
-    const date     = t.d ? (() => { const [y,m,d] = t.d.split('-'); return new Date(+y, +m-1, +d); })() : new Date();
-    const editedAt = t.ea ? new Date(t.ea) : null;
-    const monthKey = `${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`;
-    const month    = date.toLocaleDateString('pt-BR',{month:'short',year:'numeric'}).replace('. ','/');
-    return { idx: i, id: i, _excelRow: t.rid ?? null, date, month, monthKey, tipo:t.tp, desc:t.ds, cat:t.c, subcat:t.s,
-             recurso:t.r||'', valor:t.v, valorRaw:t.vr,
-             _edited: !!editedAt, _editedAt: editedAt };
-  });
+  const transactions = corpo.transactions.map(_txDeDat);
+  STATE.PENDENTES = (corpo.pend || []).map((t, i) => _txDeDat(t, corpo.transactions.length + i));
+  STATE.REGIME = 'competencia'; // ao abrir, sempre pelo regime de competência
+  atualizarRegimeUI();
 
-  if (!transactions.length) { hideLoading(); showError('Nenhuma transação encontrada no arquivo.'); return; }
+  STATE.EXCLUIDOS = (corpo.excl || []).map(e => ({ t: _txDeDat(e.tx, 0), dh: new Date(e.dh), por: e.por || 'cliente' }));
+  STATE.regModoPendentes = false; STATE.regModoTransf = false;
+  if (!transactions.length && !STATE.PENDENTES.length) { hideLoading(); showError('Nenhuma transação encontrada no arquivo.'); return; }
 
   STATE.BUDGET = corpo.budget || null;
   processData(transactions, corpo.fileName || 'dados', '', /*skipBudget=*/true);
   hideLoading();
   initDashboard();
+  STATE._pendInicial = STATE.PENDENTES.length; STATE._fimPendMostrado = false;
+  const aviso = () => showToast(`${STATE.PENDENTES.length} registro(s) "${STATUS_PEND}" ficam fora dos números até serem reclassificados.`, 'info');
+  if (STATE.PENDENTES.length && STATE.MODO === 'cliente') {
+    const n = STATE.PENDENTES.length, pl = n !== 1;
+    _mostrarDialogo({
+      titulo: '📋 Há registros esperando a sua classificação',
+      texto: `Encontramos <strong>${n} registro${pl ? 's' : ''}</strong> que o seu planejador não conseguiu classificar sozinho. ${pl ? 'Eles ficam' : 'Ele fica'} fora dos números do dashboard até você indicar o tipo ${pl ? 'de cada um' : 'dele'}.<br><br>Quer fazer isso agora?`,
+      sim: 'Classificar agora', nao: 'Ver o dashboard primeiro',
+      onSim: () => { switchView('registros'); STATE.regModoPendentes = true; STATE.regModoTransf = false; STATE.regSelecionados.clear(); renderRegistros(); },
+      onNao: aviso,
+    });
+  } else if (STATE.PENDENTES.length) {
+    aviso();
+  }
 }
 
 function importarDAT(file) {
@@ -6965,14 +8274,16 @@ function importarDAT(file) {
   reader.onload = e => {
     try {
       const raw = e.target.result;
-      if (!raw.startsWith(DAT_MAGIC)) {
+      const magic = raw.startsWith(DAT_MAGIC2) ? DAT_MAGIC2 : (raw.startsWith(DAT_MAGIC) ? DAT_MAGIC : null);
+      if (!magic) {
         hideLoading();
         showError('Arquivo inválido ou corrompido.');
         return;
       }
+      STATE._datMagic = magic;
 
       // Separa cabeçalho (texto puro) e corpo (cifrado) pelo delimitador "|"
-      const semMagic = raw.slice(DAT_MAGIC.length);
+      const semMagic = raw.slice(magic.length);
       const sepIdx   = semMagic.indexOf('|');
       if (sepIdx === -1) {
         hideLoading();
@@ -6983,7 +8294,8 @@ function importarDAT(file) {
       // ── 1. Lê e valida o cabeçalho ANTES de pedir senha ──────────────────
       const cabecalho = JSON.parse(semMagic.slice(0, sepIdx));
 
-      if (cabecalho.v !== 1) {
+      STATE._datCab = cabecalho;
+      if (cabecalho.v !== 1 && cabecalho.v !== 2 && cabecalho.v !== 3) {
         hideLoading();
         showError(`Versão do arquivo não suportada (v${cabecalho.v}). Atualize o dashboard.`);
         return;
@@ -7540,7 +8852,7 @@ function buildFormulaMedia(txs, idxs, total, media, label) {
   const byMonth = buildByMonth(txs, idxs, 'var(--mgray)');
   return {
     title: `Como chegamos na Média Mensal de ${label}`,
-    desc: `Soma total ÷ número de meses no período (${idxs.length} mês${idxs.length!==1?'es':''}) = média:`,
+    desc: `Soma total ÷ número de meses no período (${idxs.length} ${idxs.length!==1?'meses':'mês'}) = média:`,
     lines: byMonth.map((m,i) => ({ op: i===0?'':'+', item: m.label, val: fmtR(m.val), color:'var(--text-secondary)' })),
     total: `${fmtR(total)} ÷ ${idxs.length} = ${fmtR(media)}`,
     totalColor: 'var(--navy)',
@@ -7714,8 +9026,38 @@ document.addEventListener('keydown', e => {
 
 <!-- INDICADOR DE ALTERAÇÕES NÃO SALVAS — position:fixed, fora do fluxo do header,
      para que aparecer/sumir nunca desloque o menu -->
-<div id="unsavedIndicator" title="Gere um .dat (aba Registros) para não perder essas alterações">
-  <span style="font-size:15px">⚠️</span> Você tem alterações não salvas — gere um backup (.dat) antes de sair
+<div id="unsavedIndicator" title="Exporte (planejador) ou envie as correções (cliente) para não perder essas alterações">
+  <span style="font-size:15px">⚠️</span> <span id="unsavedTexto">Você tem alterações não salvas — gere um backup (.dat) antes de sair</span>
+</div>
+
+<!-- MODAL DE RECLASSIFICAÇÃO EM MASSA -->
+<div class="edit-overlay" id="reclassificarOverlay">
+  <div class="edit-modal">
+    <h3>✏️ Reclassificar Selecionados</h3>
+    <div id="reclassificarContagem" style="font-size:13px;color:var(--mgray);margin-bottom:16px"></div>
+    <div class="edit-field" id="reclassNaturezaField" style="display:none">
+      <label>Natureza</label>
+      <select id="reclassTipoMov" onchange="onReclassTipoMovChange()">
+        <option value="Ganho">Receita</option>
+        <option value="Gasto">Despesa</option>
+        <option value="Outro">Transferência</option>
+      </select>
+    </div>
+    <div class="edit-field">
+      <label>Tipo</label>
+      <select id="reclassSubcat" onchange="onReclassSubcatChange()">
+        <option value="">Selecione…</option>
+      </select>
+    </div>
+    <div class="edit-field">
+      <label>Categoria</label>
+      <input type="text" id="reclassCat" disabled>
+    </div>
+    <div class="edit-actions">
+      <button class="edit-btn-cancel" onclick="fecharModalReclassificar()">Cancelar</button>
+      <button class="edit-btn-save" onclick="confirmarReclassificacao()">✏️ Aplicar a todos</button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL DE ATIVOS DA RESERVA -->
@@ -7749,6 +9091,72 @@ document.addEventListener('keydown', e => {
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
       <div style="font-size:15px;font-weight:700">Total: <span id="ativosTotalTexto" style="color:#0F6E56">R$ 0,00</span></div>
       <button class="edit-btn-save" onclick="fecharModalAtivos()">Concluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIÁLOGO DE AVISO (2 botões) -->
+<div class="edit-overlay" id="dialogoOverlay">
+  <div class="edit-modal" style="max-width:440px">
+    <h3 id="dialogoTitulo"></h3>
+    <p id="dialogoTexto" style="font-size:14px;line-height:1.6;color:var(--text-primary);margin:6px 0 20px"></p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end">
+      <button class="edit-btn-cancel" id="dialogoNao"></button>
+      <button class="edit-btn-save" id="dialogoSim"></button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CHAVES (planejador) -->
+<div class="edit-overlay" id="chavesOverlay">
+  <div class="edit-modal ativos-modal">
+    <h3>🔑 Chaves de segurança</h3>
+    <p style="font-size:12px;color:var(--mgray);margin:-4px 0 12px;line-height:1.5">Os arquivos que os clientes enviam de volta são trancados com a <strong>chave pública</strong> e só abrem com a sua <strong>chave privada</strong>. O cliente não digita senha para enviar.</p>
+    <div id="chavesStatus" style="font-size:13px;font-weight:600;margin-bottom:6px"></div>
+    <div id="chavesEmbutida" style="font-size:12px;color:var(--mgray);margin-bottom:14px"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+      <button class="reg-btn" style="background:#0F6E56;color:#fff" onclick="document.getElementById('chavePrivInput').click()">📂 Carregar chave privada</button>
+      <input type="file" id="chavePrivInput" accept=".json,application/json" style="display:none" onchange="carregarChavePrivada(this.files[0]); this.value='';">
+      <button class="reg-btn reg-btn-secondary" onclick="showConfirm('Gerar um novo par de chaves? Retornos trancados com a chave antiga só abrem com o arquivo da chave antiga — guarde os dois.', gerarParDeChaves)">✨ Gerar novo par de chaves</button>
+    </div>
+    <div id="chavesPublicaBox" style="display:none;border-top:1px dashed var(--border);padding-top:12px">
+      <div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.5;margin-bottom:12px;color:#7C2D12"><strong>Antes de fechar esta janela:</strong> salve a chave <strong>privada</strong>. Ela só existe aqui, nesta aba — se você fechar ou recarregar a página sem salvar, ela se perde e os retornos trancados com ela nunca mais abrem.
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+          <button class="reg-btn" style="background:#B45309;color:#fff" onclick="baixarChavePrivada()">⬇ Baixar chave privada</button>
+          <button class="reg-btn reg-btn-secondary" onclick="copiarChavePrivada()">📋 Copiar texto da chave privada</button>
+        </div>
+        <textarea id="chavesPrivTxt" readonly rows="2" style="width:100%;margin-top:8px;font-family:'DM Mono',monospace;font-size:10px;padding:6px;border:1px solid #F59E0B;border-radius:6px;background:#fff;color:#444"></textarea>
+        <div style="margin-top:4px">Guarde em dois lugares seguros e nunca envie a ninguém, nem a mim.</div>
+      </div>
+      <div style="font-size:12px;color:var(--mgray);margin-bottom:6px">Chave <strong>pública</strong> (pode ser compartilhada).</div>
+      <textarea id="chavesPublicaTxt" readonly rows="4" style="width:100%;font-family:'DM Mono',monospace;font-size:11px;padding:8px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary)"></textarea>
+      <button class="reg-btn reg-btn-secondary" style="margin-top:8px" onclick="copiarChavePublica()">📋 Copiar chave pública</button>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="edit-btn-save" onclick="fecharModalChaves()">Concluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INSTITUIÇÕES -->
+<div class="edit-overlay" id="instOverlay">
+  <div class="edit-modal ativos-modal">
+    <h3>🏦 Instituições</h3>
+    <p style="font-size:12px;color:var(--mgray);margin:-4px 0 12px">Contas e cartões que você usa. Ao lançar algo manualmente, você poderá dizer onde aconteceu.</p>
+    <div id="instLista" style="max-height:240px;overflow-y:auto;margin-bottom:16px;border:1px solid var(--border);border-radius:10px"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding-top:8px;border-top:1px dashed var(--border)">
+      <div>
+        <label style="display:block;font-size:10px;color:var(--mgray);font-weight:600;margin-bottom:5px;text-transform:uppercase">Nome</label>
+        <input type="text" id="instNome" maxlength="40" placeholder="Ex: Itaú, Nubank" onkeydown="if(event.key==='Enter')salvarInstituicao()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);width:170px">
+      </div>
+      <div>
+        <label style="display:block;font-size:10px;color:var(--mgray);font-weight:600;margin-bottom:5px;text-transform:uppercase">Tipo</label>
+        <select id="instTipo" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary)"><option>Conta corrente</option><option>Cartão de crédito</option><option>Poupança</option><option>Outro</option></select>
+      </div>
+      <button class="reg-btn" style="background:#0F6E56;color:#fff" onclick="salvarInstituicao()">+ Adicionar</button>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="edit-btn-save" onclick="fecharModalInstituicoes()">Concluir</button>
     </div>
   </div>
 </div>
