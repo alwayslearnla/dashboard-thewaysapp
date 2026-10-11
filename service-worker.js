@@ -1,57 +1,33 @@
-// Mantenha este número sincronizado manualmente com APP_VERSION em index.html
-// a cada nova publicação — é isso que força o app instalado a descartar o
-// cache antigo e buscar os arquivos atualizados.
-const CACHE_NAME = "dashboard-financeiro-v3.9";
+// THE WAYS — service worker v3.9
+// Sempre busca a versão mais nova na internet; o cache só é usado sem conexão.
+// Ao ativar, apaga os caches de versões antigas para ninguém ficar preso nelas.
+const CACHE = 'theways-v3.9';
+const ARQUIVOS = ['./', './index.html', './manifest.json', './icon-192.png'];
 
-const APP_SHELL = [
-  "./index.html",
-  "./manifest.json",
-  "./icon-192.png",
-  "./icon-512.png"
-];
-
-// Instala o service worker e faz cache do "esqueleto" do app
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
-  );
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARQUIVOS).catch(() => {})));
   self.skipWaiting();
 });
 
-// Remove caches antigos quando uma nova versão é ativada
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      )
-    )
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys()
+      .then((nomes) => Promise.all(nomes.filter((n) => n !== CACHE).map((n) => caches.delete(n))))
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Estratégia: cache-first, com atualização em segundo plano (stale-while-revalidate)
-// Isso cobre tanto os arquivos locais quanto os scripts externos (Chart.js, SheetJS via CDN)
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
-
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => cachedResponse);
-
-      return cachedResponse || fetchPromise;
-    })
+self.addEventListener('fetch', (e) => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    fetch(e.request, { cache: 'no-store' })
+      .then((resp) => {
+        if (resp && resp.ok && new URL(e.request.url).origin === self.location.origin) {
+          const copia = resp.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, copia));
+        }
+        return resp;
+      })
+      .catch(() => caches.match(e.request).then((r) => r || caches.match('./index.html')))
   );
 });
