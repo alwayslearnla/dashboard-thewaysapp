@@ -1,11 +1,19 @@
-// THE WAYS — service worker v3.9
+// THE WAYS — service worker v4.0
 // Sempre busca a versão mais nova na internet; o cache só é usado sem conexão.
 // Ao ativar, apaga os caches de versões antigas para ninguém ficar preso nelas.
-const CACHE = 'theways-v3.9';
+const CACHE = 'theways-v4.0';
 const ARQUIVOS = ['./', './index.html', './manifest.json', './icon-192.png'];
+// Bibliotecas de gráficos e planilhas (versão fixa): guardadas para o app abrir sem internet
+const BIBLIOTECAS = [
+  'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARQUIVOS).catch(() => {})));
+  e.waitUntil(caches.open(CACHE).then((c) => Promise.all([
+    c.addAll(ARQUIVOS).catch(() => {}),
+    ...BIBLIOTECAS.map((u) => fetch(new Request(u, { mode: 'no-cors' })).then((r) => c.put(u, r)).catch(() => {})),
+  ])));
   self.skipWaiting();
 });
 
@@ -19,6 +27,13 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  // Bibliotecas não mudam: usa a cópia guardada e só busca na internet se não tiver
+  if (BIBLIOTECAS.includes(e.request.url)) {
+    e.respondWith(caches.match(e.request.url).then((r) => r || fetch(e.request).then((resp) => {
+      const copia = resp.clone(); caches.open(CACHE).then((c) => c.put(e.request.url, copia)); return resp;
+    })));
+    return;
+  }
   e.respondWith(
     fetch(e.request, { cache: 'no-store' })
       .then((resp) => {
