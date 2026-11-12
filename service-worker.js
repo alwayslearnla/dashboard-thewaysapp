@@ -1,7 +1,7 @@
-// THE WAYS — service worker v7.1
+// THE WAYS — service worker v7.2
 // Sempre busca a versão mais nova na internet; o cache só é usado sem conexão.
 // Ao ativar, apaga os caches de versões antigas para ninguém ficar preso nelas.
-const CACHE = 'theways-v7.1';
+const CACHE = 'theways-v7.2';
 const ARQUIVOS = ['./', './index.html', './manifest.json', './icon-192.png'];
 // Bibliotecas de gráficos e planilhas (versão fixa): guardadas para o app abrir sem internet
 const BIBLIOTECAS = [
